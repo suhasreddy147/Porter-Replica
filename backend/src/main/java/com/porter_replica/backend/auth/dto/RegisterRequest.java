@@ -7,16 +7,16 @@ import jakarta.validation.constraints.NotNull;
 
 public class RegisterRequest {
 
-	@NotBlank
+	@NotBlank(message = "Name is required")
 	private String name;
 
 	private String email;
 	private String phone;
 
-	@NotBlank
+	@NotBlank(message = "Password is required")
 	private String password;
 
-	@NotNull
+	@NotNull(message = "Role is required")
 	private Role role;
 
 	public String getName() {
