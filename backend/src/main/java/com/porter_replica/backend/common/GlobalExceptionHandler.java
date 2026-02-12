@@ -2,12 +2,29 @@ package com.porter_replica.backend.common;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+	
+	// Invalid JSON errors
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public ResponseEntity<ErrorResponse> handleInvalidJson(
+	        HttpMessageNotReadableException ex) {
+
+	    String message = "Invalid request body";
+
+	    // Optional: more specific message for enum errors
+	    if (ex.getMessage() != null && ex.getMessage().contains("Role")) {
+	        message = "Invalid role value";
+	    }
+
+	    return ResponseEntity.badRequest()
+	            .body(new ErrorResponse(400, message));
+	}
 	
 	// DTO validation errors
 	@ExceptionHandler(MethodArgumentNotValidException.class)
