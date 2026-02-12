@@ -27,12 +27,12 @@ public class AuthService {
 
 		if (request.getEmail() != null &&
 				userRepository.findByEmail(request.getEmail()).isPresent()) {
-			throw new IllegalArgumentException("Email already registered");
+			throw new IllegalArgumentException("Email is already registered");
 		}
 
 		if (request.getPhone() != null &&
 				userRepository.findByPhone(request.getPhone()).isPresent()) {
-			throw new IllegalArgumentException("Phone already registered");
+			throw new IllegalArgumentException("Phone is already registered");
 		}
 
 		User user = new User();
