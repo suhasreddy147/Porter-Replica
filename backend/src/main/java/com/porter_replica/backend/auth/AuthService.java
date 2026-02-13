@@ -1,9 +1,13 @@
 package com.porter_replica.backend.auth;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.porter_replica.backend.auth.dto.LoginRequest;
+import com.porter_replica.backend.auth.dto.LoginResponse;
 import com.porter_replica.backend.auth.dto.RegisterRequest;
+import com.porter_replica.backend.auth.jwt.JwtUtil;
 import com.porter_replica.backend.user.User;
 import com.porter_replica.backend.user.UserRepository;
 
@@ -12,6 +16,9 @@ public class AuthService {
 
 	private final UserRepository userRepository;
 	private final BCryptPasswordEncoder passwordEncoder;
+	
+	@Autowired
+	JwtUtil jwtUtil;
 
 	public AuthService(UserRepository userRepository,
 			BCryptPasswordEncoder passwordEncoder) {
@@ -44,4 +51,18 @@ public class AuthService {
 
 		userRepository.save(user);
 	}
+	
+	public LoginResponse login(LoginRequest request) {
+
+	    User user = userRepository.findByEmail(request.getEmail())
+	            .orElseThrow(() -> new IllegalArgumentException("Invalid credentials"));
+
+	    if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+	        throw new IllegalArgumentException("Invalid credentials");
+	    }
+	    
+	    String token = jwtUtil.generateToken(user);
+	    return new LoginResponse(token);
+	}
+
 }
