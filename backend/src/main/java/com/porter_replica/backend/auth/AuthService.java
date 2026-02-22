@@ -1,5 +1,8 @@
 package com.porter_replica.backend.auth;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -8,6 +11,8 @@ import com.porter_replica.backend.auth.dto.LoginRequest;
 import com.porter_replica.backend.auth.dto.LoginResponse;
 import com.porter_replica.backend.auth.dto.RegisterRequest;
 import com.porter_replica.backend.auth.jwt.JwtUtil;
+import com.porter_replica.backend.auth.session.UserSessions;
+import com.porter_replica.backend.auth.session.UserSessionsRepository;
 import com.porter_replica.backend.user.User;
 import com.porter_replica.backend.user.UserRepository;
 
@@ -16,6 +21,9 @@ public class AuthService {
 
 	private final UserRepository userRepository;
 	private final BCryptPasswordEncoder passwordEncoder;
+	
+	@Autowired
+	private UserSessionsRepository userSessionsRepository;
 	
 	@Autowired
 	JwtUtil jwtUtil;
@@ -61,7 +69,15 @@ public class AuthService {
 	        throw new IllegalArgumentException("Invalid credentials");
 	    }
 	    
-	    String token = jwtUtil.generateToken(user);
+	    UUID sessionId = UUID.randomUUID();
+	    
+	    UserSessions session = new UserSessions();
+	    session.setUser(user);
+	    session.setSessionId(sessionId);
+	    session.setStartedAt(LocalDateTime.now());
+	    session.setLastActivityAt(LocalDateTime.now());
+	    userSessionsRepository.save(session);
+	    String token = jwtUtil.generateToken(user, sessionId);
 	    return new LoginResponse(token);
 	}
 

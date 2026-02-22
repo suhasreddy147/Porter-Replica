@@ -301,8 +301,7 @@ class AuthControllerTest {
             .getContentAsString();
 
         String token = objectMapper.readTree(response)
-                .get("accessToken")
-                .asText();
+                .get("accessToken").asString();
 
         // Step 2: Call protected endpoint with token
         mockMvc.perform(get("/api/auth/me")

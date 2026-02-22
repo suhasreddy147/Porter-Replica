@@ -8,6 +8,7 @@ import io.jsonwebtoken.security.Keys;
 
 import java.util.Base64;
 import java.util.Date;
+import java.util.UUID;
 
 import javax.crypto.SecretKey;
 
@@ -28,10 +29,11 @@ public class JwtUtil {
         this.expiration = expiration;
     }
 
-    public String generateToken(User user) {
+    public String generateToken(User user, UUID sessionId) {
         return Jwts.builder()
                 .setSubject(String.valueOf(user.getId()))
                 .claim("role", user.getRole().name())
+                .claim("sid", sessionId.toString())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(key, SignatureAlgorithm.HS256)
