@@ -3,19 +3,28 @@ package com.porter_replica.backend.auth.jwt;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.porter_replica.backend.auth.session.UserSessionsRepository;
+
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    
+    @Autowired
+    private UserSessionsRepository userSessionsRepository;
 
     public JwtAuthenticationFilter(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
@@ -26,34 +35,45 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain)
-            throws ServletException, IOException {
+            		throws ServletException, IOException {
 
-        String header = request.getHeader("Authorization");
+    	String header = request.getHeader("Authorization");
 
-        if (header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
+    	if (header != null && header.startsWith("Bearer ")) {
+    		String token = header.substring(7);
 
-            try {
-                Claims claims = jwtUtil.validateToken(token);
-                String userId = claims.getSubject();
-                String role = claims.get("role", String.class);
-                String sessionId = claims.get("sid", String.class);
+    		try {
+    			Claims claims = jwtUtil.validateToken(token);
+    			String userId = claims.getSubject();
+    			String role = claims.get("role", String.class);
+    			String sessionId = claims.get("sid", String.class);
 
-                UsernamePasswordAuthenticationToken auth =
-                        new UsernamePasswordAuthenticationToken(
-                                userId,
-                                null,
-                                List.of(new SimpleGrantedAuthority("ROLE_" + role))
-                        );
+    			UsernamePasswordAuthenticationToken auth =
+    					new UsernamePasswordAuthenticationToken(
+    							userId,
+    							null,
+    							List.of(new SimpleGrantedAuthority("ROLE_" + role))
+    							);
 
-                SecurityContextHolder.getContext().setAuthentication(auth);
-                request.setAttribute("sessionId", sessionId);
-                
-            } catch (Exception ignored) {
-                // Invalid token → request will be rejected
-            }
-        }
+    			// Update activity
+    			if (sessionId != null) {
+    				UUID uuid= UUID.fromString(sessionId);
 
-        filterChain.doFilter(request, response);
+    				userSessionsRepository.findBySessionId(uuid)
+    				.ifPresent(session -> {
+    					session.setLastActivityAt(LocalDateTime.now());
+    					userSessionsRepository.save(session);
+    				});
+
+    				SecurityContextHolder.getContext().setAuthentication(auth);
+    				request.setAttribute("sessionId", sessionId);
+
+    			} 
+    		}catch (Exception ignored) {
+    			// Invalid token → request will be rejected
+    		}
+    	}
+
+    	filterChain.doFilter(request, response);
     }
 }
