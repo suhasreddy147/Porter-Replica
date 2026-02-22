@@ -37,6 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Claims claims = jwtUtil.validateToken(token);
                 String userId = claims.getSubject();
                 String role = claims.get("role", String.class);
+                String sessionId = claims.get("sid", String.class);
 
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
@@ -46,6 +47,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         );
 
                 SecurityContextHolder.getContext().setAuthentication(auth);
+                request.setAttribute("sessionId", sessionId);
+                
             } catch (Exception ignored) {
                 // Invalid token → request will be rejected
             }

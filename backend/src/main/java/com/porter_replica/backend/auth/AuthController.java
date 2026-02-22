@@ -12,6 +12,7 @@ import com.porter_replica.backend.auth.dto.LoginRequest;
 import com.porter_replica.backend.auth.dto.LoginResponse;
 import com.porter_replica.backend.auth.dto.RegisterRequest;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 @RestController
@@ -40,8 +41,9 @@ public class AuthController {
 	
 	//test method for JWT token testing, to be removed later
 	@GetMapping("/me")
-	public ResponseEntity<String> me(Authentication authentication) {
-	    return ResponseEntity.ok("Authenticated user ID: " + authentication.getPrincipal());
+	public ResponseEntity<String> me(Authentication authentication, HttpServletRequest request) {
+		return ResponseEntity.ok("Authenticated user ID: " + authentication.getPrincipal() + 
+				" | Session id: " + ((String) request.getAttribute("sessionId")));
 	}
 
 }
