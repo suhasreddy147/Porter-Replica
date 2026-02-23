@@ -37,10 +37,12 @@ class AuthControllerTest {
 	static class TestUser{
 		String email;
 		String password;
+		String phone;
 
-		public TestUser(String email, String password) {
+		public TestUser(String email, String password, String phone) {
 			this.email = email;
 			this.password = password;
+			this.phone = phone;
 		}
 	}
 
@@ -64,15 +66,19 @@ class AuthControllerTest {
 
 		String email = "test_"+UUID.randomUUID()+"@test.com";
 		String password = "password123";
+		String phone = "+188-"+ UUID.randomUUID().toString()
+		        .replaceAll("[^0-9]", "")
+		        .substring(0, 10);
 
 		String requestBody = """
 				{
 				  "name": "Test User",
 				  "email": "%s",
+				  "phone": "%s",
 				  "password": "password123",
 				  "role": "CUSTOMER"
 				}
-				""".formatted(email);
+				""".formatted(email, phone);
 
 		mockMvc.perform(post("/api/auth/register")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -80,11 +86,11 @@ class AuthControllerTest {
 		.andExpect(status().isOk())
 		.andExpect(content().string("User registered successfully"));
 
-		return new TestUser(email, password);
+		return new TestUser(email, password, phone);
 	}
 
 	@Test
-	void shouldRegisterUserSuccessfully() throws Exception {
+	void shouldRegisterUserSuccessfullyWithEmail() throws Exception {
 
 		String uniqueEmail = "test_"+UUID.randomUUID()+"@test.com";
 		String requestBody = """
@@ -102,6 +108,53 @@ class AuthControllerTest {
 		.andExpect(status().isOk())
 		.andExpect(content().string("User registered successfully"));
 	}
+	
+	@Test
+	void shouldRegisterUserSuccessfullyWithPhone() throws Exception {
+
+		String uniquePhone =  "+188-"+ UUID.randomUUID().toString()
+		        .replaceAll("[^0-9]", "")
+		        .substring(0, 10);
+		String requestBody = """
+				{
+				  "name": "JUnit Register",
+				  "phone": "%s",
+				  "password": "password123",
+				  "role": "CUSTOMER"
+				}
+				""".formatted(uniquePhone);
+
+		mockMvc.perform(post("/api/auth/register")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+		.andExpect(status().isOk())
+		.andExpect(content().string("User registered successfully"));
+	}
+	
+	@Test
+	void shouldRegisterUserSuccessfullyWithEmailAndPhone() throws Exception {
+
+		String uniquePhone =  "+188-"+ UUID.randomUUID().toString()
+		        .replaceAll("[^0-9]", "")
+		        .substring(0, 10);
+		String uniqueEmail = "test_"+UUID.randomUUID()+"@test.com";
+		String requestBody = """
+				{
+				  "name": "JUnit Register",
+				  "phone": "%s",
+				  "email": "%s",
+				  "password": "password123",
+				  "role": "CUSTOMER"
+				}
+				""".formatted(uniquePhone,uniqueEmail);
+
+		mockMvc.perform(post("/api/auth/register")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+		.andExpect(status().isOk())
+		.andExpect(content().string("User registered successfully"));
+	}
+
 
 	@Test
 	void shouldFailWhenNameIsMissing() throws Exception {
@@ -157,6 +210,24 @@ class AuthControllerTest {
 		.andExpect(status().isBadRequest())
 		.andExpect(jsonPath("$.message").value("Password is required"));
 	}
+	
+	void shouldFailWhenPasswordIsBlank() throws Exception {
+
+		String requestBody = """
+				{
+				  "name": "No Password",
+				  "email": "nopassword@test.com",
+				  "password": "",
+				  "role": "CUSTOMER"
+				}
+				""";
+
+		mockMvc.perform(post("/api/auth/register")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+		.andExpect(status().isBadRequest())
+		.andExpect(jsonPath("$.message").value("Password is required"));
+	}
 
 	@Test
 	void shouldFailWhenEmailAndPhoneMissing() throws Exception {
@@ -164,6 +235,44 @@ class AuthControllerTest {
 		String requestBody = """
 				{
 				  "name": "No Contact",
+				  "password": "password123",
+				  "role": "CUSTOMER"
+				}
+				""";
+
+		mockMvc.perform(post("/api/auth/register")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+		.andExpect(status().isBadRequest())
+		.andExpect(jsonPath("$.message").value("Email or phone is required"));
+	}
+	
+	@Test
+	void shouldFailWhenEmailIsBlank() throws Exception {
+
+		String requestBody = """
+				{
+				  "name": "No Contact",
+				  "email": "",
+				  "password": "password123",
+				  "role": "CUSTOMER"
+				}
+				""";
+
+		mockMvc.perform(post("/api/auth/register")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+		.andExpect(status().isBadRequest())
+		.andExpect(jsonPath("$.message").value("Email or phone is required"));
+	}
+	
+	@Test
+	void shouldFailWhenPhoneIsBlank() throws Exception {
+
+		String requestBody = """
+				{
+				  "name": "No Contact",
+				  "phone": "",
 				  "password": "password123",
 				  "role": "CUSTOMER"
 				}
@@ -197,6 +306,28 @@ class AuthControllerTest {
 		.andExpect(status().isBadRequest())
 		.andExpect(jsonPath("$.message").value("Email is already registered"));
 	}
+	
+	@Test
+	void shouldFailForDuplicatePhone() throws Exception {
+
+		TestUser testUser = registerTestUser();
+
+		String requestBody = """
+				{
+				  "name": "Duplicate Phone",
+				  "phone": "%s",
+				  "password": "password123",
+				  "role": "CUSTOMER"
+				}
+				""".formatted(testUser.phone);
+
+		// Second call (duplicate)
+		mockMvc.perform(post("/api/auth/register")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+		.andExpect(status().isBadRequest())
+		.andExpect(jsonPath("$.message").value("Phone is already registered"));
+	}
 
 	@Test
 	void shouldFailForInvalidRole() throws Exception {
@@ -207,6 +338,41 @@ class AuthControllerTest {
 				  "email": "invalidrole@test.com",
 				  "password": "password123",
 				  "role": "ADMIN"
+				}
+				""";
+
+		mockMvc.perform(post("/api/auth/register")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+		.andExpect(status().isBadRequest());
+	}
+	
+	@Test
+	void shouldFailForBlankRole() throws Exception {
+
+		String requestBody = """
+				{
+				  "name": "Invalid Role",
+				  "email": "invalidrole@test.com",
+				  "password": "password123",
+				  "role": ""
+				}
+				""";
+
+		mockMvc.perform(post("/api/auth/register")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+		.andExpect(status().isBadRequest());
+	}
+	
+	@Test
+	void shouldFailWForMissingRole() throws Exception {
+
+		String requestBody = """
+				{
+				  "name": "Invalid Role",
+				  "email": "invalidrole@test.com",
+				  "password": "password123"
 				}
 				""";
 
@@ -238,16 +404,37 @@ class AuthControllerTest {
 	// =======================
 
 	@Test
-	void shouldLoginSuccessfullyAndReturnJwt() throws Exception {
+	void shouldLoginSuccessfullyAndReturnJwtForEmail() throws Exception {
 
 		TestUser testUser = registerTestUser();
 
 		String requestBody = """
 				{
-				  "email": "%s",
+				  "identifier": "%s",
 				  "password": "%s"
 				}
 				""".formatted(testUser.email, testUser.password);
+
+		//Now login with the newly registered user
+		mockMvc.perform(post("/api/auth/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(requestBody))
+		.andExpect(status().isOk())
+		.andExpect(jsonPath("$.accessToken").exists())
+		.andExpect(jsonPath("$.tokenType").value("Bearer"));
+	}
+	
+	@Test
+	void shouldLoginSuccessfullyAndReturnJwtForPhone() throws Exception {
+
+		TestUser testUser = registerTestUser();
+
+		String requestBody = """
+				{
+				  "identifier": "%s",
+				  "password": "%s"
+				}
+				""".formatted(testUser.phone, testUser.password);
 
 		//Now login with the newly registered user
 		mockMvc.perform(post("/api/auth/login")
@@ -265,7 +452,7 @@ class AuthControllerTest {
 
 		String requestBody = """
 				{
-				  "email": "%s",
+				  "identifier": "%s",
 				  "password": "wrongpassword"
 				}
 				""".formatted(testUser.email);
@@ -283,7 +470,7 @@ class AuthControllerTest {
 
 		String requestBody = """
 				{
-				  "email": "nouser@test.com",
+				  "identifier": "nouser@test.com",
 				  "password": "password123"
 				}
 				""";
@@ -300,7 +487,7 @@ class AuthControllerTest {
 
 		String requestBody = """
 				{
-				  "email": "loginuser@test.com"
+				  "identifier": "loginuser@test.com"
 				}
 				""";
 
@@ -328,7 +515,7 @@ class AuthControllerTest {
 
 		String requestBody = """
 				{
-				  "email": "%s",
+				  "identifier": "%s",
 				  "password": "%s"
 				}
 				""".formatted(testUser.email, testUser.password);
@@ -364,7 +551,7 @@ class AuthControllerTest {
 
 		String requestBody = """
 				{
-				  "email": "%s",
+				  "identifier": "%s",
 				  "password": "%s"
 				}
 				""".formatted(testUser.email, testUser.password);
@@ -378,7 +565,7 @@ class AuthControllerTest {
 				.getContentAsString();
 
 		// Extract token
-		String token = objectMapper.readTree(response).get("token").asString();
+		String token = objectMapper.readTree(response).get("accessToken").asString();
 
 		// Extract sessionId from JWT
 		Claims claims = jwtUtil.extractAllClaims(token);
@@ -407,7 +594,7 @@ class AuthControllerTest {
 
 		String requestBody = """
 				{
-				  "email": "%s",
+				  "identifier": "%s",
 				  "password": "%s"
 				}
 				""".formatted(testUser.email, testUser.password);
@@ -420,7 +607,7 @@ class AuthControllerTest {
 				.getResponse()
 				.getContentAsString();
 
-		String token = objectMapper.readTree(response).get("token").asString();
+		String token = objectMapper.readTree(response).get("accessToken").asString();
 
 		Claims claims = jwtUtil.extractAllClaims(token);
 		UUID sessionId = UUID.fromString(claims.get("sid", String.class));
