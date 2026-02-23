@@ -11,10 +11,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.porter_replica.backend.auth.session.UserSessionsRepository;
+import com.porter_replica.backend.auth.session.SessionService;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,7 +23,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     
     @Autowired
-    private UserSessionsRepository userSessionsRepository;
+    private SessionService sessionService;
 
     public JwtAuthenticationFilter(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
@@ -58,12 +57,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     			// Update activity
     			if (sessionId != null) {
     				UUID uuid= UUID.fromString(sessionId);
-
-    				userSessionsRepository.findBySessionId(uuid)
-    				.ifPresent(session -> {
-    					session.setLastActivityAt(LocalDateTime.now());
-    					userSessionsRepository.save(session);
-    				});
+    				
+    				sessionService.updateActivity(uuid);
 
     				SecurityContextHolder.getContext().setAuthentication(auth);
     				request.setAttribute("sessionId", sessionId);
