@@ -28,8 +28,8 @@ public class SessionService {
                 });
     }
 
-    public void endSession(UUID sessionId) {
-        repository.findBySessionId(sessionId)
+    public void endSession(UUID sessionId, long userId) {
+        repository.findBySessionIdAndUserIdAndEndedAtIsNull(sessionId, userId)
                 .ifPresent(session -> {
                     session.setEndedAt(LocalDateTime.now());
                     repository.save(session);
