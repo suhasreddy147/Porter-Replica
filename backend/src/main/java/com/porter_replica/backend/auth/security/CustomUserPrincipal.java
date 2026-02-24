@@ -1,0 +1,35 @@
+package com.porter_replica.backend.auth.security;
+
+import java.util.Collection;
+
+import org.jspecify.annotations.Nullable;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+@Getter
+@AllArgsConstructor
+public class CustomUserPrincipal implements UserDetails{
+
+	
+	private Long userId;
+	private String sessionId;
+	
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		return null;
+	}
+
+	@Override
+	public @Nullable String getPassword() {
+		return null;
+	}
+
+	@Override
+	public String getUsername() {
+		return String.valueOf(userId);
+	}
+
+}
