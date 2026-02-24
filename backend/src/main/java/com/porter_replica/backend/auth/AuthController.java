@@ -46,6 +46,7 @@ public class AuthController {
 				" | Session id: " + ((String) request.getAttribute("sessionId")));
 	}
 	
+	@PostMapping("/logout")
 	public ResponseEntity<?> logout(){
 		return ResponseEntity.ok("Logged out successfully");
 	}
