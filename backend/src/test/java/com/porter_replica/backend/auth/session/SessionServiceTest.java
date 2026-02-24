@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -96,43 +97,25 @@ class SessionServiceTest {
 
 	    UserSessions session = new UserSessions(user, sessionId);
 
-	    when(userSessionsRepository.findBySessionId(sessionId))
+	    when(userSessionsRepository.findBySessionIdAndUserIdAndEndedAtIsNull(sessionId, user.getId()))
 	            .thenReturn(Optional.of(session));
 
-	    sessionService.endSession(sessionId);
+	    sessionService.endSession(sessionId, user.getId());
 
 	    assertNotNull(session.getEndedAt());
 
-	    verify(userSessionsRepository).save(session);
+	    verify(userSessionsRepository, times(1)).save(session);
 	}
 	
 	@Test
-	void shouldHandleSessionAlreadyEnded() {
+	void shouldDoNothingIfSessionNotFoundOrSessionAlreadyEnded() {
 
 	    UUID sessionId = UUID.randomUUID();
 
-	    UserSessions session = new UserSessions(user, sessionId);
-	    session.setEndedAt(LocalDateTime.now());
+	    when(userSessionsRepository.findBySessionIdAndUserIdAndEndedAtIsNull(sessionId, user.getId()))
+        .thenReturn(Optional.empty());
 
-	    when(userSessionsRepository.findBySessionId(sessionId))
-	            .thenReturn(Optional.of(session));
-
-	    sessionService.endSession(sessionId);
-
-	    assertNotNull(session.getEndedAt());
-
-	    verify(userSessionsRepository).save(session);
-	}
-	
-	@Test
-	void shouldDoNothingIfSessionNotFoundOnEnd() {
-
-	    UUID sessionId = UUID.randomUUID();
-
-	    when(userSessionsRepository.findBySessionId(sessionId))
-	            .thenReturn(Optional.empty());
-
-	    sessionService.endSession(sessionId);
+	    sessionService.endSession(sessionId, user.getId());
 
 	    verify(userSessionsRepository, never()).save(any());
 	}
