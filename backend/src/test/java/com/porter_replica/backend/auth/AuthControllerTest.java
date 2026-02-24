@@ -627,78 +627,6 @@ class AuthControllerTest {
 		assertTrue(afterTime.isAfter(beforeTime));
 	}
 
-//	@Test
-//	void shouldEndSessionOnLogout() throws Exception {
-//
-//		// Step 1: Login
-//		TestUser testUser = registerTestUser(); 
-//
-//		String requestBody = """
-//				{
-//				  "email": "%s",
-//				  "password": "%s"
-//				}
-//				""".formatted(testUser.email, testUser.password);
-//
-//		String response = mockMvc.perform(post("/api/auth/login")
-//				.contentType(MediaType.APPLICATION_JSON)
-//				.content(requestBody))
-//				.andExpect(status().isOk())
-//				.andReturn()
-//				.getResponse()
-//				.getContentAsString();
-//
-//		String token = objectMapper.readTree(response).get("token").asString();
-//
-//		Claims claims = jwtUtil.extractAllClaims(token);
-//		UUID sessionId = UUID.fromString(claims.get("sid", String.class));
-//
-//		// Step 2: Logout
-//		mockMvc.perform(post("/api/auth/logout")
-//				.header("Authorization", "Bearer " + token))
-//		.andExpect(status().isOk());
-//
-//		// Step 3: Verify DB
-//		UserSessions session = userSessionsRepository.findBySessionId(sessionId).get();
-//
-//		assertNotNull(session.getEndedAt());
-//	}
-//
-//	@Test
-//	void shouldHandleMultipleLogoutCallsGracefully() throws Exception {
-//
-//		// Step 1: Login
-//		TestUser testUser = registerTestUser(); 
-//
-//		String requestBody = """
-//				{
-//				  "email": "%s",
-//				  "password": "%s"
-//				}
-//				""".formatted(testUser.email, testUser.password);
-//
-//		String response = mockMvc.perform(post("/api/auth/login")
-//				.contentType(MediaType.APPLICATION_JSON)
-//				.content(requestBody))
-//				.andExpect(status().isOk())
-//				.andReturn()
-//				.getResponse()
-//				.getContentAsString();
-//
-//
-//		String token = objectMapper.readTree(response).get("token").asString();
-//
-//		// First logout
-//		mockMvc.perform(post("/api/auth/logout")
-//				.header("Authorization", "Bearer " + token))
-//		.andExpect(status().isOk());
-//
-//		// Second logout (should still succeed)
-//		mockMvc.perform(post("/api/auth/logout")
-//				.header("Authorization", "Bearer " + token))
-//		.andExpect(status().isOk());
-//	}
-
 	@Test
 	void shouldExtractClaimsFromToken() {
 
@@ -713,6 +641,118 @@ class AuthControllerTest {
 		assertEquals(user.getId().toString(), claims.getSubject());
 		assertEquals("CUSTOMER", claims.get("role"));
 		assertEquals(sessionId.toString(), claims.get("sid"));
+	}
+	
+	// =======================
+	// Logout tests
+	// =======================
+	
+	@Test
+	void shouldLogoutSuccessfully() throws Exception {
+		
+		TestUser testUser = registerTestUser();
+		
+		//Login now
+		String loginRequestBody = """
+				{
+				  "identifier": "%s",
+				  "password": "%s"
+				}
+				""".formatted(testUser.email, testUser.password);
+
+		String response = mockMvc.perform(post("/api/auth/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(loginRequestBody))
+				.andExpect(status().isOk())
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+		String token = objectMapper.readTree(response).get("accessToken").asString();
+		Claims claims = jwtUtil.extractAllClaims(token);
+		UUID sessionId = UUID.fromString(claims.get("sid", String.class));
+		long userId = Long.parseLong(claims.getSubject());
+		
+		//perform logout and receive 200
+		mockMvc.perform(post("/api/auth/logout")
+				.header("Authorization", "Bearer " + token))
+		.andExpect(status().isOk());
+		
+		// Verify DB updated
+	    UserSessions updated = userSessionsRepository
+	            .findBySessionIdAndUserIdAndEndedAtIsNull(sessionId, userId)
+	            .orElse(null);
+
+	    assert(updated == null); // session should now be ended
+		
+	}
+	
+	@Test
+	void shouldFailForNoJWT() throws Exception {
+		
+		//perform logout and receive 200
+		mockMvc.perform(post("/api/auth/logout"))
+		.andExpect(status().isUnauthorized());
+		
+	}
+	
+	@Test
+	void shouldFailForInvalidJWT() throws Exception {
+		
+		//perform logout and receive 200
+		mockMvc.perform(post("/api/auth/logout").header("Authorization", "Bearer invalid.token"))
+		.andExpect(status().isUnauthorized());
+		
+	}
+	
+	@Test
+	void shouldHandleMultipleLogoutCalls() throws Exception {
+
+		TestUser testUser = registerTestUser();
+
+		//Login now
+		String loginRequestBody = """
+				{
+				  "identifier": "%s",
+				  "password": "%s"
+				}
+				""".formatted(testUser.email, testUser.password);
+
+		String response = mockMvc.perform(post("/api/auth/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(loginRequestBody))
+				.andExpect(status().isOk())
+				.andReturn()
+				.getResponse()
+				.getContentAsString();
+
+		String token = objectMapper.readTree(response).get("accessToken").asString();
+		Claims claims = jwtUtil.extractAllClaims(token);
+		UUID sessionId = UUID.fromString(claims.get("sid", String.class));
+		long userId = Long.parseLong(claims.getSubject());
+
+		//perform first logout and receive 200
+		mockMvc.perform(post("/api/auth/logout")
+				.header("Authorization", "Bearer " + token))
+		.andExpect(status().isOk());
+
+		//perform second logout and receive 200
+		mockMvc.perform(post("/api/auth/logout")
+				.header("Authorization", "Bearer " + token))
+		.andExpect(status().isOk());
+
+		//perform third logout and receive 200
+		mockMvc.perform(post("/api/auth/logout")
+				.header("Authorization", "Bearer " + token))
+		.andExpect(status().isOk());
+
+		// Verify DB updated
+		UserSessions updated = userSessionsRepository
+				.findBySessionIdAndUserIdAndEndedAtIsNull(sessionId, userId)
+				.orElse(null);
+
+		assert(updated == null); // session should now be ended
+
 	}
 
 }
