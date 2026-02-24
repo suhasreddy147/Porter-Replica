@@ -14,7 +14,10 @@ import com.porter_replica.backend.auth.session.SessionService;
 import com.porter_replica.backend.user.User;
 import com.porter_replica.backend.user.UserRepository;
 
+import lombok.AllArgsConstructor;
+
 @Service
+@AllArgsConstructor
 public class AuthService {
 
 	private final UserRepository userRepository;
@@ -22,17 +25,7 @@ public class AuthService {
 		
 	private SessionService sessionService; 
 	
-	JwtUtil jwtUtil;
-
-	public AuthService(UserRepository userRepository,
-			BCryptPasswordEncoder passwordEncoder, 
-			SessionService sessionService, 
-			JwtUtil jwtUtil) {
-		this.userRepository = userRepository;
-		this.passwordEncoder = passwordEncoder;
-		this.jwtUtil = jwtUtil;
-		this.sessionService = sessionService;
-	}
+	private JwtUtil jwtUtil;
 
 	public void register(RegisterRequest request) {
 

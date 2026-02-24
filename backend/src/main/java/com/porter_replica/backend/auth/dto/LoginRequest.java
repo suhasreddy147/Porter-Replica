@@ -1,7 +1,11 @@
 package com.porter_replica.backend.auth.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class LoginRequest {
 
 	@NotBlank
@@ -9,21 +13,5 @@ public class LoginRequest {
 	
 	@NotBlank
 	private String password;
-
-	public String getIdentifier() {
-		return identifier;
-	}
-
-	public void setIdentifier(String identifier) {
-		this.identifier = identifier;
-	}
-
-	public String getPassword() {
-		return password;
-	}
-
-	public void setPassword(String password) {
-		this.password = password;
-	}
 	
 }
