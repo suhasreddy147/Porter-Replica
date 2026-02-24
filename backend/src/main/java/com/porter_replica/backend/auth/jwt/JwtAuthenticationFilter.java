@@ -47,11 +47,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     			String userId = claims.getSubject();
     			String role = claims.get("role", String.class);
     			String sessionId = claims.get("sid", String.class);
+   				UUID uuid= UUID.fromString(sessionId);
     			
     			CustomUserPrincipal customUserPrincipal = 
     					new CustomUserPrincipal(
     							Long.parseLong(userId),
-    							sessionId
+    							uuid
     					);
 
     			UsernamePasswordAuthenticationToken auth =
@@ -63,7 +64,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     			// Update activity
     			if (sessionId != null) {
-    				UUID uuid= UUID.fromString(sessionId);
     				sessionService.updateActivity(uuid);
     			}
     			
