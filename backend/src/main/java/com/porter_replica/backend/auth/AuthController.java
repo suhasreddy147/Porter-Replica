@@ -45,5 +45,9 @@ public class AuthController {
 		return ResponseEntity.ok("Authenticated user ID: " + authentication.getPrincipal() + 
 				" | Session id: " + ((String) request.getAttribute("sessionId")));
 	}
+	
+	public ResponseEntity<?> logout(){
+		return ResponseEntity.ok("Logged out successfully");
+	}
 
 }

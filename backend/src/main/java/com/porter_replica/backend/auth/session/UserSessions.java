@@ -14,9 +14,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name="user_sessions")
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter
 public class UserSessions {
 
 	@Id
@@ -49,82 +57,12 @@ public class UserSessions {
 	// Constructors
 	// =====================
 
-	public UserSessions() {}
-
 	public UserSessions(User user, UUID sessionId) {
 		this.user = user;
 		this.sessionId = sessionId;
 		this.startedAt = LocalDateTime.now();
 		this.lastActivityAt = LocalDateTime.now();
 		this.createdAt = LocalDateTime.now();
-	}
-	
-	//===========================
-	// Getters and Setters
-	//===========================
-	
-	public long getId() {
-		return id;
-	}
-
-	public void setId(long id) {
-		this.id = id;
-	}
-
-	public User getUser() {
-		return user;
-	}
-
-	public void setUser(User user) {
-		this.user = user;
-	}
-
-	public UUID getSessionId() {
-		return sessionId;
-	}
-
-	public void setSessionId(UUID sessionId) {
-		this.sessionId = sessionId;
-	}
-
-	public LocalDateTime getStartedAt() {
-		return startedAt;
-	}
-
-	public void setStartedAt(LocalDateTime startedAt) {
-		this.startedAt = startedAt;
-	}
-
-	public LocalDateTime getLastActivityAt() {
-		return lastActivityAt;
-	}
-
-	public void setLastActivityAt(LocalDateTime lastActivityAt) {
-		this.lastActivityAt = lastActivityAt;
-	}
-
-	public LocalDateTime getEndedAt() {
-		return endedAt;
-	}
-
-	public void setEndedAt(LocalDateTime endedAt) {
-		this.endedAt = endedAt;
-	}
-
-	public String getClientType() {
-		return clientType;
-	}
-
-	public void setClientType(String clientType) {
-		this.clientType = clientType;
-	}
-
-	public LocalDateTime getCreatedAt() {
-		return createdAt;
-	}
-
-	public void setCreatedAt(LocalDateTime createdAt) {
-		this.createdAt = createdAt;
 	}
 
 }

@@ -1,5 +1,8 @@
 package com.porter_replica.backend.auth.dto;
 
+import lombok.Getter;
+
+@Getter
 public class LoginResponse {
 
 	private String accessToken;
@@ -9,11 +12,4 @@ public class LoginResponse {
 		this.accessToken = accessToken;
 	}
 
-	public String getAccessToken() {
-		return accessToken;
-	}
-
-	public String getTokenType() {
-		return tokenType;
-	}
 }
