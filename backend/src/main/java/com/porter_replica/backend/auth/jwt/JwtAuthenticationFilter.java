@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.porter_replica.backend.auth.security.CustomUserPrincipal;
 import com.porter_replica.backend.auth.session.SessionService;
 
 import java.io.IOException;
@@ -46,10 +47,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     			String userId = claims.getSubject();
     			String role = claims.get("role", String.class);
     			String sessionId = claims.get("sid", String.class);
+    			
+    			CustomUserPrincipal customUserPrincipal = 
+    					new CustomUserPrincipal(
+    							Long.parseLong(userId),
+    							sessionId
+    					);
 
     			UsernamePasswordAuthenticationToken auth =
     					new UsernamePasswordAuthenticationToken(
-    							userId,
+    							customUserPrincipal,
     							null,
     							List.of(new SimpleGrantedAuthority("ROLE_" + role))
     							);
@@ -57,13 +64,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     			// Update activity
     			if (sessionId != null) {
     				UUID uuid= UUID.fromString(sessionId);
-    				
     				sessionService.updateActivity(uuid);
-
-    				SecurityContextHolder.getContext().setAuthentication(auth);
-    				request.setAttribute("sessionId", sessionId);
-
-    			} 
+    			}
+    			
+				SecurityContextHolder.getContext().setAuthentication(auth);
+    		
     		}catch (Exception ignored) {
     			// Invalid token → request will be rejected
     		}
