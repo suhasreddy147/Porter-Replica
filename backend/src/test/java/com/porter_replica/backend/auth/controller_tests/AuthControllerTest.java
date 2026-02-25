@@ -1,4 +1,4 @@
-package com.porter_replica.backend.auth;
+package com.porter_replica.backend.auth.controller_tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -21,11 +21,12 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.porter_replica.backend.auth.jwt.JwtUtil;
-import com.porter_replica.backend.auth.session.UserSessions;
-import com.porter_replica.backend.auth.session.UserSessionsRepository;
-import com.porter_replica.backend.user.Role;
-import com.porter_replica.backend.user.User;
+import com.porter_replica.backend.auth.constants.AuthConstants;
+import com.porter_replica.backend.auth.entity.User;
+import com.porter_replica.backend.auth.entity.UserSessions;
+import com.porter_replica.backend.auth.enums.Role;
+import com.porter_replica.backend.auth.repository.UserSessionsRepository;
+import com.porter_replica.backend.auth.security.jwt.util.JwtUtil;
 
 import io.jsonwebtoken.Claims;
 import tools.jackson.databind.ObjectMapper;
@@ -64,10 +65,10 @@ class AuthControllerTest {
 
 	private TestUser registerTestUser() throws Exception {
 
-		String email = "test_"+UUID.randomUUID()+"@test.com";
-		String password = "password123";
-		String phone = "+188-"+ UUID.randomUUID().toString()
-		        .replaceAll("[^0-9]", "")
+		String email = AuthConstants.TEST_UNDERSCORE+UUID.randomUUID()+AuthConstants.TEST_EMAIL_DOMAIN;
+		String password = AuthConstants.TEST_PASSWORD;
+		String phone = AuthConstants.TEST_PHONE_EXT+ UUID.randomUUID().toString()
+		        .replaceAll(AuthConstants.PHONE_PATTERN_MATCHER, AuthConstants.BLANK_STRING)
 		        .substring(0, 10);
 
 		String requestBody = """
@@ -80,11 +81,11 @@ class AuthControllerTest {
 				}
 				""".formatted(email, phone);
 
-		mockMvc.perform(post("/api/auth/register")
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_REGISTER_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 		.andExpect(status().isOk())
-		.andExpect(content().string("User registered successfully"));
+		.andExpect(content().string(AuthConstants.MSG_USER_REG_SUCCESSFULLY));
 
 		return new TestUser(email, password, phone);
 	}
@@ -92,7 +93,7 @@ class AuthControllerTest {
 	@Test
 	void shouldRegisterUserSuccessfullyWithEmail() throws Exception {
 
-		String uniqueEmail = "test_"+UUID.randomUUID()+"@test.com";
+		String uniqueEmail = AuthConstants.TEST_UNDERSCORE+UUID.randomUUID()+AuthConstants.TEST_EMAIL_DOMAIN;
 		String requestBody = """
 				{
 				  "name": "JUnit Register",
@@ -102,18 +103,18 @@ class AuthControllerTest {
 				}
 				""".formatted(uniqueEmail);
 
-		mockMvc.perform(post("/api/auth/register")
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_REGISTER_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 		.andExpect(status().isOk())
-		.andExpect(content().string("User registered successfully"));
+		.andExpect(content().string(AuthConstants.MSG_USER_REG_SUCCESSFULLY));
 	}
 	
 	@Test
 	void shouldRegisterUserSuccessfullyWithPhone() throws Exception {
 
-		String uniquePhone =  "+188-"+ UUID.randomUUID().toString()
-		        .replaceAll("[^0-9]", "")
+		String uniquePhone =  AuthConstants.TEST_PHONE_EXT+ UUID.randomUUID().toString()
+		        .replaceAll(AuthConstants.PHONE_PATTERN_MATCHER, AuthConstants.BLANK_STRING)
 		        .substring(0, 10);
 		String requestBody = """
 				{
@@ -124,20 +125,20 @@ class AuthControllerTest {
 				}
 				""".formatted(uniquePhone);
 
-		mockMvc.perform(post("/api/auth/register")
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_REGISTER_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 		.andExpect(status().isOk())
-		.andExpect(content().string("User registered successfully"));
+		.andExpect(content().string(AuthConstants.MSG_USER_REG_SUCCESSFULLY));
 	}
 	
 	@Test
 	void shouldRegisterUserSuccessfullyWithEmailAndPhone() throws Exception {
 
-		String uniquePhone =  "+188-"+ UUID.randomUUID().toString()
-		        .replaceAll("[^0-9]", "")
+		String uniquePhone =  AuthConstants.TEST_PHONE_EXT+ UUID.randomUUID().toString()
+		        .replaceAll(AuthConstants.PHONE_PATTERN_MATCHER, AuthConstants.BLANK_STRING)
 		        .substring(0, 10);
-		String uniqueEmail = "test_"+UUID.randomUUID()+"@test.com";
+		String uniqueEmail = AuthConstants.TEST_UNDERSCORE+UUID.randomUUID()+AuthConstants.TEST_EMAIL_DOMAIN;
 		String requestBody = """
 				{
 				  "name": "JUnit Register",
@@ -148,11 +149,11 @@ class AuthControllerTest {
 				}
 				""".formatted(uniquePhone,uniqueEmail);
 
-		mockMvc.perform(post("/api/auth/register")
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_REGISTER_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 		.andExpect(status().isOk())
-		.andExpect(content().string("User registered successfully"));
+		.andExpect(content().string(AuthConstants.MSG_USER_REG_SUCCESSFULLY));
 	}
 
 
@@ -167,11 +168,11 @@ class AuthControllerTest {
 				}
 				""";
 
-		mockMvc.perform(post("/api/auth/register")
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_REGISTER_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 		.andExpect(status().isBadRequest())
-		.andExpect(jsonPath("$.message").value("Name is required"));
+		.andExpect(jsonPath(AuthConstants.JSON_MESSAGE_KEY).value(AuthConstants.MSG_NAME_IS_REQUIRED));
 	}
 
 	@Test
@@ -186,11 +187,11 @@ class AuthControllerTest {
 				}
 				""";
 
-		mockMvc.perform(post("/api/auth/register")
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_REGISTER_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 		.andExpect(status().isBadRequest())
-		.andExpect(jsonPath("$.message").value("Name is required"));
+		.andExpect(jsonPath(AuthConstants.JSON_MESSAGE_KEY).value(AuthConstants.MSG_NAME_IS_REQUIRED));
 	}
 
 	@Test
@@ -204,11 +205,11 @@ class AuthControllerTest {
 				}
 				""";
 
-		mockMvc.perform(post("/api/auth/register")
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_REGISTER_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 		.andExpect(status().isBadRequest())
-		.andExpect(jsonPath("$.message").value("Password is required"));
+		.andExpect(jsonPath(AuthConstants.JSON_MESSAGE_KEY).value(AuthConstants.MSG_PASSWORD_IS_REQUIRED));
 	}
 	
 	void shouldFailWhenPasswordIsBlank() throws Exception {
@@ -222,11 +223,11 @@ class AuthControllerTest {
 				}
 				""";
 
-		mockMvc.perform(post("/api/auth/register")
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_REGISTER_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 		.andExpect(status().isBadRequest())
-		.andExpect(jsonPath("$.message").value("Password is required"));
+		.andExpect(jsonPath(AuthConstants.JSON_MESSAGE_KEY).value(AuthConstants.MSG_PASSWORD_IS_REQUIRED));
 	}
 
 	@Test
@@ -240,11 +241,11 @@ class AuthControllerTest {
 				}
 				""";
 
-		mockMvc.perform(post("/api/auth/register")
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_REGISTER_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 		.andExpect(status().isBadRequest())
-		.andExpect(jsonPath("$.message").value("Email or phone is required"));
+		.andExpect(jsonPath(AuthConstants.JSON_MESSAGE_KEY).value(AuthConstants.MSG_EMAIL_OR_PHONE_IS_REQUIRED));
 	}
 	
 	@Test
@@ -259,11 +260,11 @@ class AuthControllerTest {
 				}
 				""";
 
-		mockMvc.perform(post("/api/auth/register")
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_REGISTER_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 		.andExpect(status().isBadRequest())
-		.andExpect(jsonPath("$.message").value("Email or phone is required"));
+		.andExpect(jsonPath(AuthConstants.JSON_MESSAGE_KEY).value(AuthConstants.MSG_EMAIL_OR_PHONE_IS_REQUIRED));
 	}
 	
 	@Test
@@ -278,11 +279,11 @@ class AuthControllerTest {
 				}
 				""";
 
-		mockMvc.perform(post("/api/auth/register")
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_REGISTER_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 		.andExpect(status().isBadRequest())
-		.andExpect(jsonPath("$.message").value("Email or phone is required"));
+		.andExpect(jsonPath(AuthConstants.JSON_MESSAGE_KEY).value(AuthConstants.MSG_EMAIL_OR_PHONE_IS_REQUIRED));
 	}
 
 	@Test
@@ -300,11 +301,11 @@ class AuthControllerTest {
 				""".formatted(testUser.email);
 
 		// Second call (duplicate)
-		mockMvc.perform(post("/api/auth/register")
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_REGISTER_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 		.andExpect(status().isBadRequest())
-		.andExpect(jsonPath("$.message").value("Email is already registered"));
+		.andExpect(jsonPath(AuthConstants.JSON_MESSAGE_KEY).value(AuthConstants.MSG_EMAIL_IS_ALREADY_REGISTERED));
 	}
 	
 	@Test
@@ -322,11 +323,11 @@ class AuthControllerTest {
 				""".formatted(testUser.phone);
 
 		// Second call (duplicate)
-		mockMvc.perform(post("/api/auth/register")
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_REGISTER_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 		.andExpect(status().isBadRequest())
-		.andExpect(jsonPath("$.message").value("Phone is already registered"));
+		.andExpect(jsonPath(AuthConstants.JSON_MESSAGE_KEY).value(AuthConstants.MSG_PHONE_IS_ALREADY_REGISTERED));
 	}
 
 	@Test
@@ -341,7 +342,7 @@ class AuthControllerTest {
 				}
 				""";
 
-		mockMvc.perform(post("/api/auth/register")
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_REGISTER_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 		.andExpect(status().isBadRequest());
@@ -359,7 +360,7 @@ class AuthControllerTest {
 				}
 				""";
 
-		mockMvc.perform(post("/api/auth/register")
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_REGISTER_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 		.andExpect(status().isBadRequest());
@@ -376,7 +377,7 @@ class AuthControllerTest {
 				}
 				""";
 
-		mockMvc.perform(post("/api/auth/register")
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_REGISTER_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 		.andExpect(status().isBadRequest());
@@ -393,7 +394,7 @@ class AuthControllerTest {
 				  "role": "CUSTOMER"
 				""";
 
-		mockMvc.perform(post("/api/auth/register")
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_REGISTER_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 		.andExpect(status().isBadRequest());
@@ -416,12 +417,12 @@ class AuthControllerTest {
 				""".formatted(testUser.email, testUser.password);
 
 		//Now login with the newly registered user
-		mockMvc.perform(post("/api/auth/login")
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_LOGIN_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 		.andExpect(status().isOk())
-		.andExpect(jsonPath("$.accessToken").exists())
-		.andExpect(jsonPath("$.tokenType").value("Bearer"));
+		.andExpect(jsonPath(AuthConstants.JSON_ACCESS_TOKEN_KEY).exists())
+		.andExpect(jsonPath(AuthConstants.JSON_TOKEN_TYPE_KEY).value(AuthConstants.BEARER));
 	}
 	
 	@Test
@@ -437,12 +438,12 @@ class AuthControllerTest {
 				""".formatted(testUser.phone, testUser.password);
 
 		//Now login with the newly registered user
-		mockMvc.perform(post("/api/auth/login")
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_LOGIN_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 		.andExpect(status().isOk())
-		.andExpect(jsonPath("$.accessToken").exists())
-		.andExpect(jsonPath("$.tokenType").value("Bearer"));
+		.andExpect(jsonPath(AuthConstants.JSON_ACCESS_TOKEN_KEY).exists())
+		.andExpect(jsonPath(AuthConstants.JSON_TOKEN_TYPE_KEY).value(AuthConstants.BEARER));
 	}
 
 	@Test
@@ -458,11 +459,11 @@ class AuthControllerTest {
 				""".formatted(testUser.email);
 
 		//Now login with wrong password
-		mockMvc.perform(post("/api/auth/login")
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_LOGIN_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 		.andExpect(status().isBadRequest())
-		.andExpect(jsonPath("$.message").value("Invalid credentials"));
+		.andExpect(jsonPath(AuthConstants.JSON_MESSAGE_KEY).value(AuthConstants.MSG_INVALID_CREDS));
 	}
 
 	@Test
@@ -475,11 +476,11 @@ class AuthControllerTest {
 				}
 				""";
 
-		mockMvc.perform(post("/api/auth/login")
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_LOGIN_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 		.andExpect(status().isBadRequest())
-		.andExpect(jsonPath("$.message").value("Invalid credentials"));
+		.andExpect(jsonPath(AuthConstants.JSON_MESSAGE_KEY).value(AuthConstants.MSG_INVALID_CREDS));
 	}
 
 	@Test
@@ -491,7 +492,7 @@ class AuthControllerTest {
 				}
 				""";
 
-		mockMvc.perform(post("/api/auth/login")
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_LOGIN_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 		.andExpect(status().isBadRequest());
@@ -504,7 +505,7 @@ class AuthControllerTest {
 	@Test
 	void shouldRejectAccessToProtectedEndpointWithoutToken() throws Exception {
 
-		mockMvc.perform(get("/api/auth/test/jwttokentest"))
+		mockMvc.perform(get(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_TEST_ENDPOINT + AuthConstants.API_JWT_TOKEN_TEST_ENDPOINT))
 		.andExpect(status().isUnauthorized());
 	}
 
@@ -520,7 +521,7 @@ class AuthControllerTest {
 				}
 				""".formatted(testUser.email, testUser.password);
 
-		String response = mockMvc.perform(post("/api/auth/login")
+		String response = mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_LOGIN_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(status().isOk())
@@ -529,14 +530,14 @@ class AuthControllerTest {
 				.getContentAsString();
 
 		String token = objectMapper.readTree(response)
-				.get("accessToken").asString();
+				.get(AuthConstants.ACCESS_TOKEN).asString();
 
-		// Step 2: Call protected endpoint with token
-		mockMvc.perform(get("/api/auth/test/jwttokentest")
-				.header("Authorization", "Bearer " + token))
+		// Step 2: Call protected end point with token
+		mockMvc.perform(get(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_TEST_ENDPOINT + AuthConstants.API_JWT_TOKEN_TEST_ENDPOINT)
+				.header(AuthConstants.AUTHORIZATION, AuthConstants.BEARER + AuthConstants.BLANK_SPACE_SEPARATOR + token))
 		.andExpect(status().isOk())
 		.andExpect(content().string(
-				org.hamcrest.Matchers.containsString("Authenticated user ID")
+				org.hamcrest.Matchers.containsString(AuthConstants.MSG_AUTHENTICATED_USER_ID)
 				));
 	}
 	
@@ -556,7 +557,7 @@ class AuthControllerTest {
 				}
 				""".formatted(testUser.email, testUser.password);
 
-		String response = mockMvc.perform(post("/api/auth/login")
+		String response = mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_LOGIN_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(status().isOk())
@@ -565,11 +566,11 @@ class AuthControllerTest {
 				.getContentAsString();
 
 		// Extract token
-		String token = objectMapper.readTree(response).get("accessToken").asString();
+		String token = objectMapper.readTree(response).get(AuthConstants.ACCESS_TOKEN).asString();
 
 		// Extract sessionId from JWT
 		Claims claims = jwtUtil.extractAllClaims(token);
-		String sessionId = claims.get("sid", String.class);
+		String sessionId = claims.get(AuthConstants.SID_LOWER_CASE, String.class);
 
 		assertNotNull(sessionId);
 
@@ -599,7 +600,7 @@ class AuthControllerTest {
 				}
 				""".formatted(testUser.email, testUser.password);
 
-		String response = mockMvc.perform(post("/api/auth/login")
+		String response = mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_LOGIN_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 				.andExpect(status().isOk())
@@ -607,17 +608,17 @@ class AuthControllerTest {
 				.getResponse()
 				.getContentAsString();
 
-		String token = objectMapper.readTree(response).get("accessToken").asString();
+		String token = objectMapper.readTree(response).get(AuthConstants.ACCESS_TOKEN).asString();
 
 		Claims claims = jwtUtil.extractAllClaims(token);
-		UUID sessionId = UUID.fromString(claims.get("sid", String.class));
+		UUID sessionId = UUID.fromString(claims.get(AuthConstants.SID_LOWER_CASE, String.class));
 
 		UserSessions before = userSessionsRepository.findBySessionId(sessionId).get();
 		LocalDateTime beforeTime = before.getLastActivityAt();
 
 		// Step 2: Call protected API
-		mockMvc.perform(get("/api/auth/test/jwttokentest")
-				.header("Authorization", "Bearer " + token))
+		mockMvc.perform(get(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_TEST_ENDPOINT + AuthConstants.API_JWT_TOKEN_TEST_ENDPOINT)
+				.header(AuthConstants.AUTHORIZATION, AuthConstants.BEARER + AuthConstants.BLANK_SPACE_SEPARATOR + token))
 		.andExpect(status().isOk());
 
 		// Step 3: Fetch again
@@ -639,8 +640,8 @@ class AuthControllerTest {
 		Claims claims = jwtUtil.extractAllClaims(token);
 
 		assertEquals(user.getId().toString(), claims.getSubject());
-		assertEquals("CUSTOMER", claims.get("role"));
-		assertEquals(sessionId.toString(), claims.get("sid"));
+		assertEquals(Role.CUSTOMER.name(), claims.get(AuthConstants.ROLE_LOWER_CASE));
+		assertEquals(sessionId.toString(), claims.get(AuthConstants.SID_LOWER_CASE));
 	}
 	
 	// =======================
@@ -660,7 +661,7 @@ class AuthControllerTest {
 				}
 				""".formatted(testUser.email, testUser.password);
 
-		String response = mockMvc.perform(post("/api/auth/login")
+		String response = mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_LOGIN_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(loginRequestBody))
 				.andExpect(status().isOk())
@@ -668,14 +669,14 @@ class AuthControllerTest {
 				.getResponse()
 				.getContentAsString();
 
-		String token = objectMapper.readTree(response).get("accessToken").asString();
+		String token = objectMapper.readTree(response).get(AuthConstants.ACCESS_TOKEN).asString();
 		Claims claims = jwtUtil.extractAllClaims(token);
-		UUID sessionId = UUID.fromString(claims.get("sid", String.class));
+		UUID sessionId = UUID.fromString(claims.get(AuthConstants.SID_LOWER_CASE, String.class));
 		long userId = Long.parseLong(claims.getSubject());
 		
 		//perform logout and receive 200
-		mockMvc.perform(post("/api/auth/logout")
-				.header("Authorization", "Bearer " + token))
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_LOGOUT_ENDPOINT)
+				.header(AuthConstants.AUTHORIZATION, AuthConstants.BEARER + AuthConstants.BLANK_SPACE_SEPARATOR + token))
 		.andExpect(status().isOk());
 		
 		// Verify DB updated
@@ -691,7 +692,7 @@ class AuthControllerTest {
 	void shouldFailForNoJWT() throws Exception {
 		
 		//perform logout and receive 200
-		mockMvc.perform(post("/api/auth/logout"))
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_LOGOUT_ENDPOINT))
 		.andExpect(status().isUnauthorized());
 		
 	}
@@ -700,7 +701,8 @@ class AuthControllerTest {
 	void shouldFailForInvalidJWT() throws Exception {
 		
 		//perform logout and receive 200
-		mockMvc.perform(post("/api/auth/logout").header("Authorization", "Bearer invalid.token"))
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_LOGOUT_ENDPOINT)
+				.header(AuthConstants.AUTHORIZATION, AuthConstants.BEARER + AuthConstants.INVALID_TOKEN))
 		.andExpect(status().isUnauthorized());
 		
 	}
@@ -718,7 +720,7 @@ class AuthControllerTest {
 				}
 				""".formatted(testUser.email, testUser.password);
 
-		String response = mockMvc.perform(post("/api/auth/login")
+		String response = mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_LOGIN_ENDPOINT)
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(loginRequestBody))
 				.andExpect(status().isOk())
@@ -726,24 +728,24 @@ class AuthControllerTest {
 				.getResponse()
 				.getContentAsString();
 
-		String token = objectMapper.readTree(response).get("accessToken").asString();
+		String token = objectMapper.readTree(response).get(AuthConstants.ACCESS_TOKEN).asString();
 		Claims claims = jwtUtil.extractAllClaims(token);
-		UUID sessionId = UUID.fromString(claims.get("sid", String.class));
+		UUID sessionId = UUID.fromString(claims.get(AuthConstants.SID_LOWER_CASE, String.class));
 		long userId = Long.parseLong(claims.getSubject());
 
 		//perform first logout and receive 200
-		mockMvc.perform(post("/api/auth/logout")
-				.header("Authorization", "Bearer " + token))
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_LOGOUT_ENDPOINT)
+				.header(AuthConstants.AUTHORIZATION, AuthConstants.BEARER + AuthConstants.BLANK_SPACE_SEPARATOR + token))
 		.andExpect(status().isOk());
 
 		//perform second logout and receive 200
-		mockMvc.perform(post("/api/auth/logout")
-				.header("Authorization", "Bearer " + token))
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_LOGOUT_ENDPOINT)
+				.header(AuthConstants.AUTHORIZATION, AuthConstants.BEARER + AuthConstants.BLANK_SPACE_SEPARATOR + token))
 		.andExpect(status().isOk());
 
 		//perform third logout and receive 200
-		mockMvc.perform(post("/api/auth/logout")
-				.header("Authorization", "Bearer " + token))
+		mockMvc.perform(post(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_LOGOUT_ENDPOINT)
+				.header(AuthConstants.AUTHORIZATION, AuthConstants.BEARER + AuthConstants.BLANK_SPACE_SEPARATOR + token))
 		.andExpect(status().isOk());
 
 		// Verify DB updated

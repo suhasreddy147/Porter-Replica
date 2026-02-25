@@ -1,6 +1,8 @@
-package com.porter_replica.backend.user;
+package com.porter_replica.backend.auth.entity;
 
 import java.time.LocalDateTime;
+
+import com.porter_replica.backend.auth.enums.Role;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

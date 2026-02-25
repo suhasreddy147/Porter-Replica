@@ -1,11 +1,13 @@
-package com.porter_replica.backend.auth.session;
+package com.porter_replica.backend.auth.service;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import com.porter_replica.backend.user.User;
+import com.porter_replica.backend.auth.entity.User;
+import com.porter_replica.backend.auth.entity.UserSessions;
+import com.porter_replica.backend.auth.repository.UserSessionsRepository;
 
 @Service
 public class SessionService {

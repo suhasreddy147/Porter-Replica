@@ -7,17 +7,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.porter_replica.backend.auth.AuthService;
-import com.porter_replica.backend.auth.dto.LoginRequest;
-import com.porter_replica.backend.auth.dto.LoginResponse;
-import com.porter_replica.backend.auth.dto.RegisterRequest;
-import com.porter_replica.backend.auth.security.CustomUserPrincipal;
-import com.porter_replica.backend.auth.session.SessionService;
+
+import com.porter_replica.backend.auth.constants.AuthConstants;
+import com.porter_replica.backend.auth.dto.LoginRequestDTO;
+import com.porter_replica.backend.auth.dto.LoginResponseDTO;
+import com.porter_replica.backend.auth.dto.RegisterRequestDTO;
+import com.porter_replica.backend.auth.security.principal.CustomUserPrincipal;
+import com.porter_replica.backend.auth.service.AuthService;
+import com.porter_replica.backend.auth.service.SessionService;
 
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping(AuthConstants.API_AUTH_PARENT_ENDPOINT)
 public class AuthController {
 	
 	private final AuthService authService;
@@ -29,22 +31,22 @@ public class AuthController {
 		this.authService = authService;
 	}
 
-	@PostMapping("/register")
+	@PostMapping(AuthConstants.API_REGISTER_ENDPOINT)
 	public ResponseEntity<?> register(
-			@Valid @RequestBody RegisterRequest request) {
+			@Valid @RequestBody RegisterRequestDTO request) {
 
 		authService.register(request);
-		return ResponseEntity.ok("User registered successfully");
+		return ResponseEntity.ok(AuthConstants.MSG_USER_REG_SUCCESSFULLY);
 	}
 	
-	@PostMapping("/login")
-	public ResponseEntity<LoginResponse> login(
-			@Valid @RequestBody LoginRequest request) {
+	@PostMapping(AuthConstants.API_LOGIN_ENDPOINT)
+	public ResponseEntity<LoginResponseDTO> login(
+			@Valid @RequestBody LoginRequestDTO request) {
 
 		return ResponseEntity.ok(authService.login(request));
 	}
 	
-	@PostMapping("/logout")
+	@PostMapping(AuthConstants.API_LOGOUT_ENDPOINT)
 	public ResponseEntity<?> logout( @AuthenticationPrincipal CustomUserPrincipal user){
 		
 		if (user == null) {
@@ -56,7 +58,7 @@ public class AuthController {
                 user.getUserId()
         );
 		
-		return ResponseEntity.ok("Logged out successfully");
+		return ResponseEntity.ok(AuthConstants.MSG_LOGGED_OUT_SUCCESSFULLY);
 	}
 
 }

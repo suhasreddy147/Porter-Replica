@@ -1,4 +1,4 @@
-package com.porter_replica.backend.auth.jwt;
+package com.porter_replica.backend.auth.security.jwt;
 
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.*;
@@ -11,8 +11,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.porter_replica.backend.auth.security.CustomUserPrincipal;
-import com.porter_replica.backend.auth.session.SessionService;
+import com.porter_replica.backend.auth.constants.AuthConstants;
+import com.porter_replica.backend.auth.security.jwt.util.JwtUtil;
+import com.porter_replica.backend.auth.security.principal.CustomUserPrincipal;
+import com.porter_replica.backend.auth.service.SessionService;
 
 import java.io.IOException;
 import java.util.List;
@@ -37,16 +39,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain)
             		throws ServletException, IOException {
 
-    	String header = request.getHeader("Authorization");
+    	String header = request.getHeader(AuthConstants.AUTHORIZATION);
 
-    	if (header != null && header.startsWith("Bearer ")) {
+    	if (header != null && header.startsWith(AuthConstants.BEARER+AuthConstants.BLANK_SPACE_SEPARATOR)) {
     		String token = header.substring(7);
 
     		try {
     			Claims claims = jwtUtil.validateToken(token);
     			String userId = claims.getSubject();
-    			String role = claims.get("role", String.class);
-    			String sessionId = claims.get("sid", String.class);
+    			String role = claims.get(AuthConstants.ROLE_LOWER_CASE, String.class);
+    			String sessionId = claims.get(AuthConstants.SID_LOWER_CASE, String.class);
    				UUID uuid= UUID.fromString(sessionId);
     			
     			CustomUserPrincipal customUserPrincipal = 
@@ -59,7 +61,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     					new UsernamePasswordAuthenticationToken(
     							customUserPrincipal,
     							null,
-    							List.of(new SimpleGrantedAuthority("ROLE_" + role))
+    							List.of(new SimpleGrantedAuthority(AuthConstants.ROLE_UNDERSCORE + role))
     							);
 
     			// Update activity

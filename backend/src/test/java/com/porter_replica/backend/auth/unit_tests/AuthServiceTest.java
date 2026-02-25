@@ -1,4 +1,4 @@
-package com.porter_replica.backend.auth;
+package com.porter_replica.backend.auth.unit_tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -19,15 +19,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import com.porter_replica.backend.auth.dto.LoginRequest;
-import com.porter_replica.backend.auth.dto.LoginResponse;
-import com.porter_replica.backend.auth.dto.RegisterRequest;
-import com.porter_replica.backend.auth.jwt.JwtUtil;
-import com.porter_replica.backend.auth.session.SessionService;
-import com.porter_replica.backend.auth.session.UserSessionsRepository;
-import com.porter_replica.backend.user.Role;
-import com.porter_replica.backend.user.User;
-import com.porter_replica.backend.user.UserRepository;
+import com.porter_replica.backend.auth.constants.AuthConstants;
+import com.porter_replica.backend.auth.dto.LoginRequestDTO;
+import com.porter_replica.backend.auth.dto.LoginResponseDTO;
+import com.porter_replica.backend.auth.dto.RegisterRequestDTO;
+import com.porter_replica.backend.auth.entity.User;
+import com.porter_replica.backend.auth.enums.Role;
+import com.porter_replica.backend.auth.repository.UserRepository;
+import com.porter_replica.backend.auth.repository.UserSessionsRepository;
+import com.porter_replica.backend.auth.security.jwt.util.JwtUtil;
+import com.porter_replica.backend.auth.service.AuthService;
+import com.porter_replica.backend.auth.service.SessionService;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
@@ -56,8 +58,8 @@ class AuthServiceTest {
 	void setup() {
 		user = new User();
 		user.setId(1L);
-		user.setEmail("test@test.com");
-		user.setPassword("encodedPassword");
+		user.setEmail(AuthConstants.TEST_EMAIL_USERNAME + AuthConstants.TEST_EMAIL_DOMAIN);
+		user.setPassword(AuthConstants.TEST_ENCODED_PASWORD);
 		user.setRole(Role.CUSTOMER);
 	}
 	
@@ -67,16 +69,16 @@ class AuthServiceTest {
 
 	@Test
 	void shouldRegisterUserWithEmail() {
-		RegisterRequest registerRequest = new RegisterRequest();
-		registerRequest.setName("Test User");
-		registerRequest.setEmail("test@email.com");
-		registerRequest.setPassword("password123");
+		RegisterRequestDTO registerRequest = new RegisterRequestDTO();
+		registerRequest.setName(AuthConstants.TEST_USER_NAME);
+		registerRequest.setEmail(AuthConstants.TEST_EMAIL_USERNAME + AuthConstants.TEST_EMAIL_DOMAIN);
+		registerRequest.setPassword(AuthConstants.TEST_PASSWORD);
 		registerRequest.setRole(Role.CUSTOMER);
 
 		when(userRepository.findByEmail(registerRequest.getEmail()))
 		.thenReturn(Optional.empty());
 		when(passwordEncoder.encode(any()))
-		.thenReturn("encodedPassword");
+		.thenReturn(AuthConstants.TEST_ENCODED_PASWORD);
 
 		authService.register(registerRequest);
 
@@ -85,16 +87,16 @@ class AuthServiceTest {
 	
 	@Test
 	void shouldRegisterUserWithPhone() {
-		RegisterRequest registerRequest = new RegisterRequest();
-		registerRequest.setName("Test User");
-		registerRequest.setPhone("9999999999");
-		registerRequest.setPassword("password123");
+		RegisterRequestDTO registerRequest = new RegisterRequestDTO();
+		registerRequest.setName(AuthConstants.TEST_USER_NAME);
+		registerRequest.setPhone(AuthConstants.TEST_PHONE_NUMBER);
+		registerRequest.setPassword(AuthConstants.TEST_PASSWORD);
 		registerRequest.setRole(Role.CUSTOMER);
 
 		when(userRepository.findByPhone(registerRequest.getPhone()))
 		.thenReturn(Optional.empty());
 		when(passwordEncoder.encode(any()))
-		.thenReturn("encodedPassword");
+		.thenReturn(AuthConstants.TEST_ENCODED_PASWORD);
 
 		authService.register(registerRequest);
 
@@ -103,17 +105,17 @@ class AuthServiceTest {
 	
 	@Test
 	void shouldRegisterUserWithEmailAndPhone() {
-		RegisterRequest registerRequest = new RegisterRequest();
-		registerRequest.setName("Test User");
-		registerRequest.setEmail("test@email.com");
-		registerRequest.setPhone("9999999999");
-		registerRequest.setPassword("password123");
+		RegisterRequestDTO registerRequest = new RegisterRequestDTO();
+		registerRequest.setName(AuthConstants.TEST_USER_NAME);
+		registerRequest.setEmail(AuthConstants.TEST_EMAIL_USERNAME + AuthConstants.TEST_EMAIL_DOMAIN);
+		registerRequest.setPhone(AuthConstants.TEST_PHONE_NUMBER);
+		registerRequest.setPassword(AuthConstants.TEST_PASSWORD);
 		registerRequest.setRole(Role.CUSTOMER);
 
 		when(userRepository.findByEmail(registerRequest.getEmail()))
 		.thenReturn(Optional.empty());
 		when(passwordEncoder.encode(any()))
-		.thenReturn("encodedPassword");
+		.thenReturn(AuthConstants.TEST_ENCODED_PASWORD);
 
 		authService.register(registerRequest);
 
@@ -123,10 +125,10 @@ class AuthServiceTest {
 	@Test
 	void shouldFailWhenEmailAlreadyExists() {
 
-		RegisterRequest request = new RegisterRequest();
-		request.setEmail("test@test.com");
-		request.setPassword("password123");
-		request.setName("Test User");
+		RegisterRequestDTO request = new RegisterRequestDTO();
+		request.setEmail(AuthConstants.TEST_EMAIL_USERNAME + AuthConstants.TEST_EMAIL_DOMAIN);
+		request.setPassword(AuthConstants.TEST_PASSWORD);
+		request.setName(AuthConstants.TEST_USER_NAME);
 		request.setRole(Role.CUSTOMER);
 
 		when(userRepository.findByEmail(request.getEmail()))
@@ -139,10 +141,10 @@ class AuthServiceTest {
 	@Test
 	void shouldFailWhenPhoneAlreadyExists() {
 
-		RegisterRequest request = new RegisterRequest();
-		request.setPhone("9999999999");
-		request.setPassword("password123");
-		request.setName("Test User");
+		RegisterRequestDTO request = new RegisterRequestDTO();
+		request.setPhone(AuthConstants.TEST_PHONE_NUMBER);
+		request.setPassword(AuthConstants.TEST_PASSWORD);
+		request.setName(AuthConstants.TEST_USER_NAME);
 		request.setRole(Role.CUSTOMER);
 
 		when(userRepository.findByPhone(request.getPhone()))
@@ -155,11 +157,11 @@ class AuthServiceTest {
 	@Test
 	void shouldFailWhenPhoneAlreadyExistsButEmailDoesNotExist() {
 
-		RegisterRequest request = new RegisterRequest();
-		request.setPhone("9999999999");
-		request.setEmail("test@test.com");
-		request.setPassword("password123");
-		request.setName("Test User");
+		RegisterRequestDTO request = new RegisterRequestDTO();
+		request.setPhone(AuthConstants.TEST_PHONE_NUMBER);
+		request.setEmail(AuthConstants.TEST_EMAIL_USERNAME + AuthConstants.TEST_EMAIL_DOMAIN);
+		request.setPassword(AuthConstants.TEST_PASSWORD);
+		request.setName(AuthConstants.TEST_USER_NAME);
 		request.setRole(Role.CUSTOMER);
 
 		when(userRepository.findByPhone(request.getPhone()))
@@ -175,11 +177,11 @@ class AuthServiceTest {
 	@Test
 	void shouldFailWhenEmailAlreadyExistsButPhoneDoesNotExist() {
 
-		RegisterRequest request = new RegisterRequest();
-		request.setPhone("9999999999");
-		request.setEmail("test@test.com");
-		request.setPassword("password123");
-		request.setName("Test User");
+		RegisterRequestDTO request = new RegisterRequestDTO();
+		request.setPhone(AuthConstants.TEST_PHONE_NUMBER);
+		request.setEmail(AuthConstants.TEST_EMAIL_USERNAME + AuthConstants.TEST_EMAIL_DOMAIN);
+		request.setPassword(AuthConstants.TEST_PASSWORD);
+		request.setName(AuthConstants.TEST_USER_NAME);
 		request.setRole(Role.CUSTOMER);
 
 		when(userRepository.findByEmail(request.getEmail()))
@@ -192,8 +194,8 @@ class AuthServiceTest {
 	@Test
 	void shouldFailWhenEmailAndPhoneMissing() {
 
-		RegisterRequest request = new RegisterRequest();
-		request.setPassword("password123");
+		RegisterRequestDTO request = new RegisterRequestDTO();
+		request.setPassword(AuthConstants.TEST_PASSWORD);
 
 		assertThrows(IllegalArgumentException.class,
 				() -> authService.register(request));
@@ -202,8 +204,8 @@ class AuthServiceTest {
 	@Test
 	void shouldFailWhenPasswordIsMissing() {
 
-		RegisterRequest request = new RegisterRequest();
-		request.setEmail("test@test.com");
+		RegisterRequestDTO request = new RegisterRequestDTO();
+		request.setEmail(AuthConstants.TEST_EMAIL_USERNAME + AuthConstants.TEST_EMAIL_DOMAIN);
 
 		assertThrows(IllegalArgumentException.class,
 				() -> authService.register(request));
@@ -212,7 +214,7 @@ class AuthServiceTest {
 	@Test
 	void shouldFailWhenBlank() {
 
-		RegisterRequest request = new RegisterRequest();
+		RegisterRequestDTO request = new RegisterRequestDTO();
 
 		assertThrows(IllegalArgumentException.class,
 				() -> authService.register(request));
@@ -225,23 +227,23 @@ class AuthServiceTest {
 	@Test
 	void shouldLoginSuccessfullyWithEmail() {
 
-		LoginRequest request = new LoginRequest();
-		request.setIdentifier("test@test.com");
-		request.setPassword("password123");
+		LoginRequestDTO request = new LoginRequestDTO();
+		request.setIdentifier(AuthConstants.TEST_EMAIL_USERNAME + AuthConstants.TEST_EMAIL_DOMAIN);
+		request.setPassword(AuthConstants.TEST_PASSWORD);
 
 		when(userRepository.findByEmailOrPhone(request.getIdentifier()))
 		.thenReturn(Optional.of(user));
 
-		when(passwordEncoder.matches("password123", "encodedPassword"))
+		when(passwordEncoder.matches(AuthConstants.TEST_PASSWORD, AuthConstants.TEST_ENCODED_PASWORD))
 		.thenReturn(true);
 
 		when(jwtUtil.generateToken(any(User.class), any(UUID.class)))
-		.thenReturn("mock-token");
+		.thenReturn(AuthConstants.MOCK_TOKEN);
 
-		LoginResponse response = authService.login(request);
+		LoginResponseDTO response = authService.login(request);
 
 		assertNotNull(response);
-		assertEquals("mock-token", response.getAccessToken());
+		assertEquals(AuthConstants.MOCK_TOKEN, response.getAccessToken());
 
 		verify(sessionService).createSession(eq(user), any(UUID.class));
 	}
@@ -249,23 +251,23 @@ class AuthServiceTest {
 	@Test
 	void shouldLoginSuccessfullyWithPhone() {
 
-		LoginRequest request = new LoginRequest();
-		request.setIdentifier("9999999999");
-		request.setPassword("password123");
+		LoginRequestDTO request = new LoginRequestDTO();
+		request.setIdentifier(AuthConstants.TEST_PHONE_NUMBER);
+		request.setPassword(AuthConstants.TEST_PASSWORD);
 
 		when(userRepository.findByEmailOrPhone(request.getIdentifier()))
 		.thenReturn(Optional.of(user));
 
-		when(passwordEncoder.matches("password123", "encodedPassword"))
+		when(passwordEncoder.matches(AuthConstants.TEST_PASSWORD, AuthConstants.TEST_ENCODED_PASWORD))
 		.thenReturn(true);
 
 		when(jwtUtil.generateToken(any(User.class), any(UUID.class)))
-		.thenReturn("mock-token");
+		.thenReturn(AuthConstants.MOCK_TOKEN);
 
-		LoginResponse response = authService.login(request);
+		LoginResponseDTO response = authService.login(request);
 
 		assertNotNull(response);
-		assertEquals("mock-token", response.getAccessToken());
+		assertEquals(AuthConstants.MOCK_TOKEN, response.getAccessToken());
 
 		verify(sessionService).createSession(eq(user), any(UUID.class));
 	}
@@ -273,9 +275,9 @@ class AuthServiceTest {
 	@Test
 	void shouldFailLoginWhenPhoneNotFound() {
 
-		LoginRequest request = new LoginRequest();
-		request.setIdentifier("9999999999");
-		request.setPassword("password123");
+		LoginRequestDTO request = new LoginRequestDTO();
+		request.setIdentifier(AuthConstants.TEST_PHONE_NUMBER);
+		request.setPassword(AuthConstants.TEST_PASSWORD);
 
 		when(userRepository.findByEmailOrPhone(request.getIdentifier()))
 		.thenReturn(Optional.empty());
@@ -287,9 +289,9 @@ class AuthServiceTest {
 	@Test
 	void shouldFailLoginWhenEmailNotFound() {
 
-		LoginRequest request = new LoginRequest();
-		request.setIdentifier("notfound@test.com");
-		request.setPassword("password123");
+		LoginRequestDTO request = new LoginRequestDTO();
+		request.setIdentifier(AuthConstants.TEST_EMAIL_USERNAME + AuthConstants.TEST_EMAIL_DOMAIN);
+		request.setPassword(AuthConstants.TEST_PASSWORD);
 
 		when(userRepository.findByEmailOrPhone(request.getIdentifier()))
 		.thenReturn(Optional.empty());
@@ -301,14 +303,14 @@ class AuthServiceTest {
 	@Test
 	void shouldFailLoginWhenPasswordIncorrectForPhone() {
 
-		LoginRequest request = new LoginRequest();
-		request.setIdentifier("9999999999");
-		request.setPassword("wrongPassword");
+		LoginRequestDTO request = new LoginRequestDTO();
+		request.setIdentifier(AuthConstants.TEST_PHONE_NUMBER);
+		request.setPassword(AuthConstants.TEST_WRONG_PASWORD);
 
 		when(userRepository.findByEmailOrPhone(request.getIdentifier()))
 		.thenReturn(Optional.of(user));
 
-		when(passwordEncoder.matches("wrongPassword", "encodedPassword"))
+		when(passwordEncoder.matches(AuthConstants.TEST_WRONG_PASWORD, AuthConstants.TEST_ENCODED_PASWORD))
 		.thenReturn(false);
 
 		assertThrows(IllegalArgumentException.class,
@@ -318,14 +320,14 @@ class AuthServiceTest {
 	@Test
 	void shouldFailLoginWhenPasswordIncorrectForEmail() {
 
-		LoginRequest request = new LoginRequest();
-		request.setIdentifier("test@test.com");
-		request.setPassword("wrongPassword");
+		LoginRequestDTO request = new LoginRequestDTO();
+		request.setIdentifier(AuthConstants.TEST_EMAIL_USERNAME + AuthConstants.TEST_EMAIL_DOMAIN);
+		request.setPassword(AuthConstants.TEST_WRONG_PASWORD);
 
 		when(userRepository.findByEmailOrPhone(request.getIdentifier()))
 		.thenReturn(Optional.of(user));
 
-		when(passwordEncoder.matches("wrongPassword", "encodedPassword"))
+		when(passwordEncoder.matches(AuthConstants.TEST_WRONG_PASWORD, AuthConstants.TEST_ENCODED_PASWORD))
 		.thenReturn(false);
 
 		assertThrows(IllegalArgumentException.class,
