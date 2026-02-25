@@ -1,6 +1,7 @@
 package com.porter_replica.backend.config;
 
 import com.porter_replica.backend.auth.jwt.JwtAuthenticationFilter;
+import com.porter_replica.backend.user.Role;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -34,6 +35,9 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
             .requestMatchers("/api/auth/logout").authenticated()
+            .requestMatchers("/api/auth/test/customer").hasRole(Role.CUSTOMER.name())
+            .requestMatchers("/api/auth/test/driver").hasRole(Role.DRIVER.name())
+            .requestMatchers("/api/auth/test/admin").hasRole(Role.ADMIN.name())
             .anyRequest().authenticated()
         )
         .exceptionHandling(exception -> exception
