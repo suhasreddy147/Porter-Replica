@@ -16,6 +16,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name="user_sessions")
@@ -23,7 +24,8 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class UserSessions {
+@ToString
+public class UserSessions extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,9 +50,6 @@ public class UserSessions {
 	@Column(name = "client_type")
 	private String clientType;
 
-	@Column(name = "created_at")
-	private LocalDateTime createdAt;
-
 	// =====================
 	// Constructors
 	// =====================
@@ -60,7 +59,6 @@ public class UserSessions {
 		this.sessionId = sessionId;
 		this.startedAt = LocalDateTime.now();
 		this.lastActivityAt = LocalDateTime.now();
-		this.createdAt = LocalDateTime.now();
 	}
 
 }
