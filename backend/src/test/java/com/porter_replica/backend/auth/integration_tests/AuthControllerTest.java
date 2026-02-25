@@ -1,4 +1,4 @@
-package com.porter_replica.backend.auth.controller_tests;
+package com.porter_replica.backend.auth.integration_tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

@@ -1,22 +1,30 @@
 package com.porter_replica.backend.auth.unit_tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.porter_replica.backend.auth.constants.AuthConstants;
@@ -28,6 +36,7 @@ import com.porter_replica.backend.auth.enums.Role;
 import com.porter_replica.backend.auth.repository.UserRepository;
 import com.porter_replica.backend.auth.repository.UserSessionsRepository;
 import com.porter_replica.backend.auth.security.jwt.util.JwtUtil;
+import com.porter_replica.backend.auth.security.principal.CustomUserPrincipal;
 import com.porter_replica.backend.auth.service.AuthService;
 import com.porter_replica.backend.auth.service.SessionService;
 
@@ -61,6 +70,7 @@ class AuthServiceTest {
 		user.setEmail(AuthConstants.TEST_EMAIL_USERNAME + AuthConstants.TEST_EMAIL_DOMAIN);
 		user.setPassword(AuthConstants.TEST_ENCODED_PASWORD);
 		user.setRole(Role.CUSTOMER);
+		SecurityContextHolder.clearContext();
 	}
 	
 	// =========================
@@ -79,10 +89,21 @@ class AuthServiceTest {
 		.thenReturn(Optional.empty());
 		when(passwordEncoder.encode(any()))
 		.thenReturn(AuthConstants.TEST_ENCODED_PASWORD);
+		when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+			User user = invocation.getArgument(0);
+			user.setId(1L);
+			return user;
+		});
 
 		authService.register(registerRequest);
 
-		verify(userRepository).save(any(User.class));
+		ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+		verify(userRepository).save(userCaptor.capture());
+		User savedUser = userCaptor.getValue();
+		
+		assertEquals(1L, savedUser.getCreatedBy());
+		assertNull(savedUser.getUpdatedBy());
+
 	}
 	
 	@Test
@@ -97,10 +118,21 @@ class AuthServiceTest {
 		.thenReturn(Optional.empty());
 		when(passwordEncoder.encode(any()))
 		.thenReturn(AuthConstants.TEST_ENCODED_PASWORD);
+		when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+			User user = invocation.getArgument(0);
+			user.setId(1L);
+			return user;
+		});
 
 		authService.register(registerRequest);
 
-		verify(userRepository).save(any(User.class));
+		ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+		verify(userRepository).save(userCaptor.capture());
+		User savedUser = userCaptor.getValue();
+		
+		assertEquals(1L, savedUser.getCreatedBy());
+		assertNull(savedUser.getUpdatedBy());
+
 	}
 	
 	@Test
@@ -116,10 +148,22 @@ class AuthServiceTest {
 		.thenReturn(Optional.empty());
 		when(passwordEncoder.encode(any()))
 		.thenReturn(AuthConstants.TEST_ENCODED_PASWORD);
+		when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+			User user = invocation.getArgument(0);
+			user.setId(1L);
+			return user;
+		});
 
 		authService.register(registerRequest);
 
-		verify(userRepository).save(any(User.class));
+		ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+		verify(userRepository).save(userCaptor.capture());
+		
+		User savedUser = userCaptor.getValue();
+		
+		assertEquals(1L, savedUser.getCreatedBy());
+		assertNull(savedUser.getUpdatedBy());
+
 	}
 
 	@Test
@@ -218,6 +262,47 @@ class AuthServiceTest {
 
 		assertThrows(IllegalArgumentException.class,
 				() -> authService.register(request));
+	}
+	
+	@Test
+	void shouldSetCreatedByFromAuditorWhenAuthenticatedUserRegisterNewUser() {
+
+	    // Arrange
+	    CustomUserPrincipal principal =
+	            new CustomUserPrincipal(99L, UUID.randomUUID(), List.of());
+
+	    Authentication auth =
+	            new UsernamePasswordAuthenticationToken(principal, null, List.of());
+
+	    SecurityContextHolder.getContext().setAuthentication(auth);
+
+	    RegisterRequestDTO request = new RegisterRequestDTO();
+	    request.setName(AuthConstants.TEST_USER_NAME);
+	    request.setEmail(AuthConstants.TEST_EMAIL_USERNAME + AuthConstants.TEST_EMAIL_DOMAIN);
+	    request.setPassword(AuthConstants.TEST_PASSWORD);
+	    request.setRole(Role.CUSTOMER);
+
+	    when(userRepository.findByEmail(request.getEmail()))
+	            .thenReturn(Optional.empty());
+
+	    when(userRepository.save(any(User.class)))
+	            .thenAnswer(invocation -> {
+	                User user = invocation.getArgument(0);
+	                user.setId(2L);
+	                return user;
+	            });
+
+	    // Act
+	    authService.register(request);
+
+	    // Assert
+	    ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
+	    verify(userRepository, atLeastOnce()).save(userCaptor.capture());
+
+	    User savedUser = userCaptor.getValue();
+
+	    //AuditorAware should take precedence
+	    assertNotEquals(savedUser.getId(), savedUser.getCreatedBy());
 	}
 
 	// =========================

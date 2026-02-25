@@ -1,4 +1,4 @@
-package com.porter_replica.backend.auth.controller_tests;
+package com.porter_replica.backend.auth.integration_tests;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
