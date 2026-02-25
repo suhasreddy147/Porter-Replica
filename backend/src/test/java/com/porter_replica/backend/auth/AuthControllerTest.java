@@ -337,7 +337,7 @@ class AuthControllerTest {
 				  "name": "Invalid Role",
 				  "email": "invalidrole@test.com",
 				  "password": "password123",
-				  "role": "ADMIN"
+				  "role": "INVALID"
 				}
 				""";
 
@@ -504,7 +504,7 @@ class AuthControllerTest {
 	@Test
 	void shouldRejectAccessToProtectedEndpointWithoutToken() throws Exception {
 
-		mockMvc.perform(get("/api/auth/me"))
+		mockMvc.perform(get("/api/auth/test/jwttokentest"))
 		.andExpect(status().isUnauthorized());
 	}
 
@@ -532,7 +532,7 @@ class AuthControllerTest {
 				.get("accessToken").asString();
 
 		// Step 2: Call protected endpoint with token
-		mockMvc.perform(get("/api/auth/me")
+		mockMvc.perform(get("/api/auth/test/jwttokentest")
 				.header("Authorization", "Bearer " + token))
 		.andExpect(status().isOk())
 		.andExpect(content().string(
@@ -616,7 +616,7 @@ class AuthControllerTest {
 		LocalDateTime beforeTime = before.getLastActivityAt();
 
 		// Step 2: Call protected API
-		mockMvc.perform(get("/api/auth/me")
+		mockMvc.perform(get("/api/auth/test/jwttokentest")
 				.header("Authorization", "Bearer " + token))
 		.andExpect(status().isOk());
 
