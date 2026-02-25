@@ -54,7 +54,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     			CustomUserPrincipal customUserPrincipal = 
     					new CustomUserPrincipal(
     							Long.parseLong(userId),
-    							uuid
+    							uuid, List.of(new SimpleGrantedAuthority(AuthConstants.ROLE_UNDERSCORE + role))
     					);
 
     			UsernamePasswordAuthenticationToken auth =

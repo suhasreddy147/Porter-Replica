@@ -18,10 +18,11 @@ public class CustomUserPrincipal implements UserDetails{
 	
 	private Long userId;
 	private UUID sessionId;
+	private Collection<? extends GrantedAuthority> authorities;
 	
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-		return null;
+		return authorities;
 	}
 
 	@Override
