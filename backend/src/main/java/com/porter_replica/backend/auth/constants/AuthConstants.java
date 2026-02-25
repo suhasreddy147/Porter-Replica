@@ -58,4 +58,5 @@ public final class AuthConstants {
 	public static final String TEST_EMAIL_USERNAME = "test";
 	public static final String PLACEHOLDER_JWT_EXPIRATION = "${jwt.expiration}";
 	public static final String PLACEHOLDER_JWT_SECRET = "${jwt.secret}";
+	public static final String AUTH_AUDITOR_AWARE = "authAuditorAware";
 }

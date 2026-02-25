@@ -2,6 +2,8 @@ package com.porter_replica.backend.auth.service;
 
 import java.util.UUID;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -14,6 +16,7 @@ import com.porter_replica.backend.auth.entity.User;
 import com.porter_replica.backend.auth.repository.UserRepository;
 import com.porter_replica.backend.auth.security.jwt.util.JwtUtil;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -27,6 +30,7 @@ public class AuthService {
 	
 	private JwtUtil jwtUtil;
 
+	@Transactional
 	public void register(RegisterRequestDTO request) {
 
 		if (!StringUtils.hasText(request.getEmail()) && !StringUtils.hasText(request.getPhone())) {
@@ -62,7 +66,13 @@ public class AuthService {
 		user.setRole(request.getRole());
 		user.setPassword(passwordEncoder.encode(request.getPassword()));
 
-		userRepository.save(user);
+		User createdUser = userRepository.save(user);
+		Authentication auth =
+	            SecurityContextHolder.getContext().getAuthentication();
+		
+		if(auth == null || !auth.isAuthenticated()) {
+			createdUser.setCreatedBy(createdUser.getId());
+		}
 	}
 	
 	public LoginResponseDTO login(LoginRequestDTO request) {
