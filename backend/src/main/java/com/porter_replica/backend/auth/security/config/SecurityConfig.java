@@ -1,7 +1,8 @@
-package com.porter_replica.backend.config;
+package com.porter_replica.backend.auth.security.config;
 
-import com.porter_replica.backend.auth.jwt.JwtAuthenticationFilter;
-import com.porter_replica.backend.user.Role;
+import com.porter_replica.backend.auth.constants.AuthConstants;
+import com.porter_replica.backend.auth.enums.Role;
+import com.porter_replica.backend.auth.security.jwt.JwtAuthenticationFilter;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -33,17 +34,23 @@ public class SecurityConfig {
 		http
         .csrf(csrf -> csrf.disable())
         .authorizeHttpRequests(auth -> auth
-            .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
-            .requestMatchers("/api/auth/logout").authenticated()
-            .requestMatchers("/api/auth/test/customer").hasRole(Role.CUSTOMER.name())
-            .requestMatchers("/api/auth/test/driver").hasRole(Role.DRIVER.name())
-            .requestMatchers("/api/auth/test/admin").hasRole(Role.ADMIN.name())
+            .requestMatchers(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_REGISTER_ENDPOINT,
+            		AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_LOGIN_ENDPOINT)
+            .permitAll()
+            .requestMatchers(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_LOGOUT_ENDPOINT)
+            .authenticated()
+            .requestMatchers(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_TEST_ENDPOINT + AuthConstants.API_CUSTOMER_ENDPOINT)
+            .hasRole(Role.CUSTOMER.name())
+            .requestMatchers(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_TEST_ENDPOINT + AuthConstants.API_DRIVER_ENDPOINT)
+            .hasRole(Role.DRIVER.name())
+            .requestMatchers(AuthConstants.API_AUTH_PARENT_ENDPOINT + AuthConstants.API_TEST_ENDPOINT + AuthConstants.API_ADMIN_ENDPOINT)
+            .hasRole(Role.ADMIN.name())
             .anyRequest().authenticated()
         )
         .exceptionHandling(exception -> exception
         	    .authenticationEntryPoint(
         	            (request, response, authException) ->
-        	                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized")
+        	                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, AuthConstants.UNAUTHORIZED)
         	        )
         	    )
         .addFilterBefore(jwtAuthenticationFilter,

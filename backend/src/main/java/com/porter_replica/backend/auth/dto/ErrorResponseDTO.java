@@ -1,4 +1,4 @@
-package com.porter_replica.backend.common;
+package com.porter_replica.backend.auth.dto;
 
 import java.time.LocalDateTime;
 
@@ -9,13 +9,13 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class ErrorResponse {
+public class ErrorResponseDTO {
 
     private int status;
     private String message;
     private LocalDateTime timestamp;
 
-    public ErrorResponse(int status, String message) {
+    public ErrorResponseDTO(int status, String message) {
         this.status = status;
         this.message = message;
         this.timestamp = LocalDateTime.now();

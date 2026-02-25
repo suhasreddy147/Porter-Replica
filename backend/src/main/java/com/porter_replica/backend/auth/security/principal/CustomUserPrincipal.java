@@ -1,4 +1,4 @@
-package com.porter_replica.backend.auth.security;
+package com.porter_replica.backend.auth.security.principal;
 
 import java.util.Collection;
 import java.util.UUID;

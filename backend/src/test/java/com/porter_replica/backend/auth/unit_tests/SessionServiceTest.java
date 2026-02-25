@@ -1,4 +1,4 @@
-package com.porter_replica.backend.auth.session;
+package com.porter_replica.backend.auth.unit_tests;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -19,8 +19,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import com.porter_replica.backend.user.Role;
-import com.porter_replica.backend.user.User;
+
+import com.porter_replica.backend.auth.entity.User;
+import com.porter_replica.backend.auth.entity.UserSessions;
+import com.porter_replica.backend.auth.enums.Role;
+import com.porter_replica.backend.auth.repository.UserSessionsRepository;
+import com.porter_replica.backend.auth.service.SessionService;
 
 @ExtendWith(MockitoExtension.class)
 class SessionServiceTest {

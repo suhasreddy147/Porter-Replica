@@ -1,8 +1,11 @@
-package com.porter_replica.backend.auth.jwt;
+package com.porter_replica.backend.auth.security.jwt.util;
 
-import com.porter_replica.backend.user.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import com.porter_replica.backend.auth.constants.AuthConstants;
+import com.porter_replica.backend.auth.entity.User;
+
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 
@@ -17,12 +20,12 @@ public class JwtUtil {
 
 	private final SecretKey key;
 
-    @Value("${jwt.expiration}")
+    @Value(AuthConstants.PLACEHOLDER_JWT_EXPIRATION)
     private long expiration;
     
     public JwtUtil(
-            @Value("${jwt.secret}") String secret,
-            @Value("${jwt.expiration}") long expiration
+            @Value(AuthConstants.PLACEHOLDER_JWT_SECRET) String secret,
+            @Value(AuthConstants.PLACEHOLDER_JWT_EXPIRATION) long expiration
     ) {
         byte[] decodedKey = Base64.getDecoder().decode(secret);
         this.key = Keys.hmacShaKeyFor(decodedKey);
@@ -32,8 +35,8 @@ public class JwtUtil {
     public String generateToken(User user, UUID sessionId) {
         return Jwts.builder()
                 .setSubject(String.valueOf(user.getId()))
-                .claim("role", user.getRole().name())
-                .claim("sid", sessionId.toString())
+                .claim(AuthConstants.ROLE_LOWER_CASE, user.getRole().name())
+                .claim(AuthConstants.SID_LOWER_CASE, sessionId.toString())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(key, SignatureAlgorithm.HS256)

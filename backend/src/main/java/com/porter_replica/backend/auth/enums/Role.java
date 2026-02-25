@@ -1,4 +1,4 @@
-package com.porter_replica.backend.user;
+package com.porter_replica.backend.auth.enums;
 
 public enum Role {
 	CUSTOMER,

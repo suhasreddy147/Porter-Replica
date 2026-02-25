@@ -1,9 +1,7 @@
-package com.porter_replica.backend.auth.session;
+package com.porter_replica.backend.auth.entity;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
-
-import com.porter_replica.backend.user.User;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
