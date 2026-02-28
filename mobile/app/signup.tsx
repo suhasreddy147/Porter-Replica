@@ -1,8 +1,8 @@
+import { CountryPicker } from "@betterdev/react-native-country-codes-picker";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useContext, useState } from "react";
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 import { signupUser } from "../src/api/authApi";
 import { AuthContext } from "../src/context/AuthContext";
 import { validatePassword, validatePhone } from "../src/utils/validators";
@@ -18,11 +18,12 @@ export default function SignupScreen() {
   const [error, setError] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
-  const [countryCode, setCountryCode] = useState<CountryCode>("US");
+  const [countryCode, setCountryCode] = useState("+91");
   const [callingCode, setCallingCode] = useState("1");
   const [visible, setVisible] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [showPicker, setShowPicker] = useState(false);
 
   const handleSignup = async () => {
     setSubmitted(true);
@@ -78,25 +79,22 @@ export default function SignupScreen() {
       <View style={styles.phoneInput}>
   
   {/* Country Picker */}
-  <TouchableOpacity onPress={() => setVisible(true)} style={styles.countryPicker}>
-    <CountryPicker
-      countryCode={countryCode}
-      withCallingCode
-      withFilter
-      withFlag
-      visible={visible}
-      onSelect={(country) => {
-        setCountryCode(country.cca2 as CountryCode);
-        setCallingCode(country.callingCode[0]);
-        setVisible(false);
-      }}
-      onClose={() => setVisible(false)}
-    />
-     <View style={styles.codeContainer}>
-    <Text style={styles.countryCode}>+{callingCode}</Text>
-    <Ionicons name="chevron-down" size={16} color="#6B7280" />
-  </View>
-  </TouchableOpacity>
+  <TouchableOpacity
+  style={styles.countryPicker}
+  onPress={() => setShowPicker(true)}
+>
+  <Text style={styles.countryCode}>{countryCode}</Text>
+  <Ionicons name="chevron-down" size={16} color="#6B7280" />
+</TouchableOpacity>
+<CountryPicker
+  show={showPicker}
+  pickerButtonOnPress={(item) => {
+    setCountryCode(item.dial_code);
+    setShowPicker(false);
+  }}
+  onBackdropPress={() => setShowPicker(false)}
+  lang="en"
+/>
 
   {/* Divider */}
   <View style={styles.divider} />
@@ -173,6 +171,7 @@ export default function SignupScreen() {
       {/* Checkbox */}
       <View style={styles.termsRow}>
   <TouchableOpacity
+  testID="terms-checkbox"
     style={[
       styles.checkbox,
       {

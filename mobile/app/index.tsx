@@ -1,10 +1,10 @@
 import { validatePassword, validatePhone } from "@/src/utils/validators";
+import { CountryPicker } from "@betterdev/react-native-country-codes-picker";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from "expo-router";
 import { useContext, useState } from "react";
 import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
-import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 import { loginUser } from "../src/api/authApi";
 import { AuthContext } from "../src/context/AuthContext";
 
@@ -18,7 +18,8 @@ export default function LoginScreen() {
   const [error, setError] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
 
-  const [countryCode, setCountryCode] = useState<CountryCode>("US");
+  const [countryCode, setCountryCode] = useState("+91");
+  const [showPicker, setShowPicker] = useState(false);
   const [callingCode, setCallingCode] = useState("1");
   const [visible, setVisible] = useState(false);
 
@@ -75,25 +76,22 @@ export default function LoginScreen() {
       <View style={styles.phoneInput}>
   
   {/* Country Picker */}
-  <TouchableOpacity onPress={() => setVisible(true)} style={styles.countryPicker}>
-    <CountryPicker
-      countryCode={countryCode}
-      withCallingCode
-      withFilter
-      withFlag
-      visible={visible}
-      onSelect={(country) => {
-        setCountryCode(country.cca2 as CountryCode);
-        setCallingCode(country.callingCode[0]);
-        setVisible(false);
-      }}
-      onClose={() => setVisible(false)}
-    />
-     <View style={styles.codeContainer}>
-    <Text style={styles.countryCode}>+{callingCode}</Text>
-    <Ionicons name="chevron-down" size={16} color="#6B7280" />
-  </View>
-  </TouchableOpacity>
+<TouchableOpacity
+  style={styles.countryPicker}
+  onPress={() => setShowPicker(true)}
+>
+  <Text style={styles.countryCode}>{countryCode}</Text>
+  <Ionicons name="chevron-down" size={16} color="#6B7280" />
+</TouchableOpacity>
+<CountryPicker
+  show={showPicker}
+  pickerButtonOnPress={(item) => {
+    setCountryCode(item.dial_code);
+    setShowPicker(false);
+  }}
+  onBackdropPress={() => setShowPicker(false)}
+  lang="en"
+/>
 
   {/* Divider */}
   <View style={styles.divider} />
