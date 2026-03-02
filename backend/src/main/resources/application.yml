@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5433/porter_replica
+    username: web_app_user
+    password: web_app_pass
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+
+server:
+  port: 8081
+
+jwt:
+  secret: mXK7c0QF6Lz0oT7FZpXJ3nY1G+f9G7B2c7k5R9w2X4A=
+  expiration: 3600000
