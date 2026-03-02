@@ -4,10 +4,10 @@
  */
 
 import axios from "axios";
-import tokenStorage from "../utils/tokenStorage";
+import { tokenStorage } from "../utils/tokenStorage";
 
 // Configure API base URL (update with your backend URL)
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8081/api";
 
 // Create axios instance with default config
 const axiosInstance = axios.create({
@@ -47,22 +47,20 @@ axiosInstance.interceptors.response.use(
 export const authService = {
   /**
    * Login user
-   * @param {string} email - User email
+   * @param {string} identifier - User email or phone
    * @param {string} password - User password
-   * @returns {Promise} Response with token and user data
+   * @returns {Promise} Response with accessToken and tokenType
    */
-  login: async (email, password) => {
+  login: async (identifier, password) => {
     try {
       const response = await axiosInstance.post("/auth/login", {
-        email,
+        identifier,
         password,
       });
-      const { token, refreshToken, user } = response.data;
+      const { accessToken, tokenType } = response.data;
 
-      // Store tokens and user data
-      tokenStorage.setToken(token);
-      if (refreshToken) tokenStorage.setRefreshToken(refreshToken);
-      tokenStorage.setUser(user);
+      // Store token
+      tokenStorage.setToken(accessToken);
 
       return {
         success: true,
@@ -82,26 +80,21 @@ export const authService = {
    * Signup user
    * @param {string} email - User email
    * @param {string} password - User password
-   * @param {string} name - User name (optional)
-   * @returns {Promise} Response with token and user data
+   * @param {string} name - User name
+   * @param {string} role - User role
+   * @returns {Promise} Response indicating successful registration
    */
-  signup: async (email, password, name = "") => {
+  signup: async (email, password, name, role) => {
     try {
-      const response = await axiosInstance.post("/auth/signup", {
+      const response = await axiosInstance.post("/auth/register", {
         email,
         password,
         name,
+        role,
       });
-      const { token, refreshToken, user } = response.data;
-
-      // Store tokens and user data
-      tokenStorage.setToken(token);
-      if (refreshToken) tokenStorage.setRefreshToken(refreshToken);
-      tokenStorage.setUser(user);
 
       return {
         success: true,
-        data: response.data,
         message: "Signup successful",
       };
     } catch (error) {
@@ -127,14 +120,19 @@ export const authService = {
       // Clear local storage regardless of API response
       tokenStorage.clear();
     }
+    return {
+        success: true,
+        message: "Logout successful",
+    };
   },
 
   /**
    * Get current user
    */
-  getCurrentUser: () => {
-    return tokenStorage.getUser();
-  },
+  //Suhas Reddy | commented out getCurrentUser logic for now, can be implemented later if needed
+  // getCurrentUser: () => {
+  //   return tokenStorage.getUser();
+  // },
 
   /**
    * Check if user is authenticated
@@ -147,51 +145,53 @@ export const authService = {
    * Refresh authentication token
    * @returns {Promise} New token
    */
-  refreshToken: async () => {
-    try {
-      const refreshToken = tokenStorage.getRefreshToken();
-      if (!refreshToken) {
-        throw new Error("No refresh token available");
-      }
+  //Suhas Reddy | commented out refresh token logic for now, can be implemented later if needed
+  // refreshToken: async () => {
+  //   try {
+  //     const refreshToken = tokenStorage.getRefreshToken();
+  //     if (!refreshToken) {
+  //       throw new Error("No refresh token available");
+  //     }
 
-      const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-        refreshToken,
-      });
-      const { token } = response.data;
+  //     const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
+  //       refreshToken,
+  //     });
+  //     const { token } = response.data;
 
-      tokenStorage.setToken(token);
-      return {
-        success: true,
-        token,
-      };
-    } catch (error) {
-      tokenStorage.clear();
-      return {
-        success: false,
-        message: "Token refresh failed",
-        error,
-      };
-    }
-  },
+  //     tokenStorage.setToken(token);
+  //     return {
+  //       success: true,
+  //       token,
+  //     };
+  //   } catch (error) {
+  //     tokenStorage.clear();
+  //     return {
+  //       success: false,
+  //       message: "Token refresh failed",
+  //       error,
+  //     };
+  //   }
+  // },
 
   /**
    * Verify token validity
    */
-  verifyToken: async () => {
-    try {
-      const response = await axiosInstance.get("/auth/verify");
-      return {
-        success: true,
-        data: response.data,
-      };
-    } catch (error) {
-      tokenStorage.clear();
-      return {
-        success: false,
-        error,
-      };
-    }
-  },
+  //Suhas Reddy | commented out token verification logic for now, can be implemented later if needed
+  // verifyToken: async () => {
+  //   try {
+  //     const response = await axiosInstance.get("/auth/verify");
+  //     return {
+  //       success: true,
+  //       data: response.data,
+  //     };
+  //   } catch (error) {
+  //     tokenStorage.clear();
+  //     return {
+  //       success: false,
+  //       error,
+  //     };
+  //   }
+  // },
 };
 
 export default authService;

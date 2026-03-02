@@ -8,7 +8,8 @@ import authService from "../services/auth.service";
 import tokenStorage from "../utils/tokenStorage";
 
 export function useAuth() {
-  const [user, setUser] = useState(null);
+ //Suhas Reddy | commented out user state for now, can be implemented later if needed
+  // const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,18 +20,20 @@ export function useAuth() {
       try {
         const token = tokenStorage.getToken();
         if (token) {
-          const userData = tokenStorage.getUser();
-          setUser(userData);
+          //Suhas Reddy | commented out user data retrieval logic for now, can be implemented later if needed
+          // const userData = tokenStorage.getUser();
+          // setUser(userData);
           setIsAuthenticated(true);
 
           // Optional: Verify token with backend
-          const result = await authService.verifyToken();
-          if (!result.success) {
-            // Token is invalid, clear auth
-            tokenStorage.clear();
-            setIsAuthenticated(false);
-            setUser(null);
-          }
+          //Suhas Reddy | commented out token verification logic for now, can be implemented later if needed
+          // const result = await authService.verifyToken();
+          // if (!result.success) {
+          //   // Token is invalid, clear auth
+          //   tokenStorage.clear();
+          //   setIsAuthenticated(false);
+          //   setUser(null);
+          // }
         }
       } catch (err) {
         console.error("Auth verification failed:", err);
@@ -45,15 +48,16 @@ export function useAuth() {
   /**
    * Login user
    */
-  const login = useCallback(async (email, password) => {
+  const login = useCallback(async (identifier, password) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const result = await authService.login(email, password);
+      const result = await authService.login(identifier, password);
 
       if (result.success) {
-        setUser(result.data.user);
+        //Suhas Reddy | commented out user data retrieval logic for now, can be implemented later if needed
+        //setUser(result.data.user);
         setIsAuthenticated(true);
         return {
           success: true,
@@ -81,15 +85,16 @@ export function useAuth() {
   /**
    * Signup user
    */
-  const signup = useCallback(async (email, password, name = "") => {
+  const signup = useCallback(async (email, password, name, role="CUSTOMER") => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const result = await authService.signup(email, password, name);
+      const result = await authService.signup(email, password, name, role);
 
       if (result.success) {
-        setUser(result.data.user);
+        //Suhas Reddy | commented out user data retrieval logic for now, can be implemented later if needed
+        //setUser(result.data.user);
         setIsAuthenticated(true);
         return {
           success: true,
@@ -121,7 +126,8 @@ export function useAuth() {
     setIsLoading(true);
     try {
       await authService.logout();
-      setUser(null);
+      //Suhas Reddy | commented out user data clearing logic for now, can be implemented later if needed
+      //setUser(null);
       setIsAuthenticated(false);
       setError(null);
     } catch (err) {
@@ -139,7 +145,8 @@ export function useAuth() {
   }, []);
 
   return {
-    user,
+   //Suhas Reddy | commented out user data retrieval logic for now, can be implemented later if needed
+    // user,
     isAuthenticated,
     isLoading,
     error,
