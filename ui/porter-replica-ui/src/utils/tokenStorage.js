@@ -33,8 +33,9 @@ export const tokenStorage = {
    * Get auth token
    */
   getToken: () => {
-    return memoryStore[TOKEN_KEY] || localStorage.getItem(TOKEN_KEY);
-  },
+    const token = localStorage.getItem(TOKEN_KEY);
+    return token ?? memoryStore[TOKEN_KEY];
+},
 
   /**
    * Set refresh token
@@ -72,7 +73,7 @@ export const tokenStorage = {
    * Get user data
    */
   getUser: () => {
-    const user = memoryStore[USER_KEY] || localStorage.getItem(USER_KEY);
+    const user = localStorage.getItem(USER_KEY) ?? memoryStore[USER_KEY];
     try {
       return user ? JSON.parse(user) : null;
     } catch {
@@ -98,7 +99,8 @@ export const tokenStorage = {
    * Check if token exists
    */
   hasToken: () => {
-    return !!tokenStorage.getToken();
+    const token = tokenStorage.getToken();
+    return !!token && token !== "null"; 
   },
 };
 
