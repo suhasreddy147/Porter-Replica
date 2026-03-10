@@ -3,6 +3,7 @@ package com.porter_replica.backend.auth.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,6 +21,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping(AuthConstants.API_AUTH_PARENT_ENDPOINT)
+@CrossOrigin(origins = "*")
 public class AuthController {
 	
 	private final AuthService authService;
