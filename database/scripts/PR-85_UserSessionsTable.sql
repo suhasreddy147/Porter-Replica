@@ -1,3 +1,7 @@
+drop table if exists user_sessions;
+drop index if exists idx_user_sessions_user_id;
+drop index if exists idx_user_sessions_session_id;
+drop index if exists idx_user_sessions_started_at;
 CREATE TABLE user_sessions (
     id BIGSERIAL PRIMARY KEY,
 
