@@ -1,3 +1,5 @@
+drop table if exists users;
+
 CREATE TABLE users (
     id BIGSERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -12,5 +14,3 @@ ALTER TABLE users ADD updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO web_app_user;
 GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO web_app_user;
-
-SELECT * FROM users;
